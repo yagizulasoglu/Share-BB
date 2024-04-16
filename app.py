@@ -41,13 +41,12 @@ s3 = boto3.client(
 )
 
 
-print((s3.list_buckets()).Buckets, "#####################################")
+# print((s3.list_buckets()).Buckets, "#####################################")
 # for bucket in s3.buckets.all():
 #     print(bucket.name)
 
 with open('test.jpeg', 'rb') as data:
-    s3.put_object(s3.list_buckets().Buckets[0].Name).put_object(
-        Key='test.jpeg', Body=data)
+    s3.put_object("sharebandb1234", Key='test.jpeg', Body=data)
 
 # try:
 #     response = s3_client.put_object(
