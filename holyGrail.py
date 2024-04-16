@@ -7,13 +7,11 @@ s3 = boto3.client(
 
 
 with open('test.jpeg', 'rb') as data:
-    s3.put_object(Bucket = os.environ.get('BUCKET'), Key='test.jpeg', Body=data)
+    s3.put_object(Bucket=os.environ.get('BUCKET'), Key='test.jpeg', Body=data)
 
 
-image = s3.get_object(Bucket = os.environ.get('BUCKET'), Key= 'test.jpeg')
+image = s3.get_object(Bucket=os.environ.get('BUCKET'), Key='test.jpeg')
+breakpoint()
 image_data = image['Body'].read()
 image = Image.open(BytesIO(image_data))
 image.show()
-
-breakpoint()
-

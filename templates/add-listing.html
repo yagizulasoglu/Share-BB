@@ -8,7 +8,7 @@
   <div class="col-md-7 col-lg-5">
     <h2 class="join-message">Welcome back.</h2>
 
-    <form method="POST" id="user_form">
+    <form method="POST" id="user_form" enctype="multipart/form-data">
       {% for field in form if field.widget.input_type != 'hidden' %}
       {% for error in field.errors %}
       <span class="text-danger">{{ error }}</span>
@@ -16,7 +16,7 @@
       {{ field(placeholder=field.label.text, class="form-control") }}
       {% endfor %}
 
-      <button class="btn btn-primary btn-lg">Log in</button>
+      <button class="btn btn-primary btn-lg">Submit</button>
     </form>
   </div>
 </div>

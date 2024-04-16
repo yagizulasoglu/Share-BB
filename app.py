@@ -36,18 +36,18 @@ if app.debug:
 
 # toolbar = DebugToolbarExtension(app)
 
-def add_image_to_bucket():
-    s3 = boto3.client(
+s3 = boto3.client(
     "s3",
     "us-east-1",
     aws_access_key_id=os.environ.get('ACCESS_KEY'),
     aws_secret_access_key=os.environ.get('AWS_SECRET_KEY'),
 )
-    with open('test.jpeg', 'rb') as data:
-        s3.put_object(Bucket = os.environ.get('BUCKET'), Key='test.jpeg', Body=data)
 
 
-
+def add_image_to_bucket(content, filename):
+    print(filename, "**************")
+    s3.put_object(Bucket=os.environ.get('BUCKET'),
+                  Key=filename, Body=content)
 
 
 @app.route('/add-listing', methods=['GET', 'POST'])
@@ -55,6 +55,33 @@ def add_listing():
 
     form = AddAListingForm()
 
-    add_image_to_bucket();
+    if form.validate_on_submit():
+        filename = form.Image.data.filename
+        image_file = request.files['Image']
+        image_content = image_file.read()
+        add_image_to_bucket(image_content, filename)
 
-    return render_template('add-listing.html', form = form )
+    else:
+        return render_template('add-listing.html', form=form)
+
+    print(form.Image.data, "#############################")
+
+    return render_template('add-listing.html', form=form)
+
+
+@app.get('/get-photo')
+def get_photo():
+
+    # s3 = boto3.client(
+    #     "s3",
+    #     "us-east-1",
+    #     aws_access_key_id=os.environ.get('ACCESS_KEY'),
+    #     aws_secret_access_key=os.environ.get('AWS_SECRET_KEY'),
+    # )
+
+    image_src = "https://sharebandb1234.s3.amazonaws.com/test123.jpeg"
+    # breakpoint()
+    # image_data = image['Body'].read()
+    # image = Image.open(BytesIO(image_data))
+
+    return render_template('get-photo.html', image_src=image_src)
