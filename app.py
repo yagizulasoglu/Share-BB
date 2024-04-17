@@ -16,7 +16,7 @@ from flask import Flask, render_template, flash, redirect, session, g, jsonify, 
 # from sqlalchemy import or_
 
 
-from models import connect_db, User, db
+from models import connect_db, User, db, Listing
 load_dotenv()
 
 CURR_USER_KEY = "curr_user"
@@ -183,6 +183,25 @@ def list_users():
     return render_template("users/users.html", users=users)
 
 
+
+
+@app.get('/listings')
+def list_listings():
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    listings = Listing.query.all()
+
+
+    return render_template("listings/listing.html", listings=listings, image_path = 'test.jpeg')
+
+
+
+
+
+
 def add_image_to_bucket(content, filename, listing):
     print(filename, "**************")
     s3.put_object(Bucket=os.environ.get('BUCKET'),
@@ -224,3 +243,5 @@ def get_photo():
     # image = Image.open(BytesIO(image_data))
 
     return render_template('get-photo.html', image_src=image_src,)
+
+

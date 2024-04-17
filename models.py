@@ -125,21 +125,24 @@ class Listing(db.Model):
     )
 
     user = db.relationship('User', backref="listings")
-#     image_paths = db.relationship('Image_Path', backref='listings')
+
+    images = db.relationship('ImagePath', backref='listings')
 
 
-# class Image_Path(db.Model):
-#     __tablename__ = "image_paths"
+class ImagePath(db.Model):
+    __tablename__ = "image_paths"
 
-#     path = db.Column(
-#         db.Text,
-#         primary_key=True,
-#     )
+    path = db.Column(
+        db.Text,
+        primary_key=True,
+    )
 
-#     listing_id = db.column(
-#         db.Integer,
-#         db.ForeignKey('listing.id', ondelete='CASCADE'),
-#         )
+    listing_id = db.Column(
+        db.Integer,
+        db.ForeignKey('listings.id', ondelete='CASCADE'),
+        nullable=False,
+    )
+
 
 
 def connect_db(app):
