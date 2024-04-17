@@ -4,7 +4,7 @@ import os
 from PIL import Image
 from io import BytesIO
 from dotenv import load_dotenv
-from forms import AddListingForm, CSRFProtection, UserAddForm, LoginForm, UserUpdateForm
+from forms import AddListingForm, CSRFProtection, UserAddForm, LoginForm, UserUpdateForm, EditListingForm
 from sqlalchemy.exc import IntegrityError
 
 import boto3
@@ -20,6 +20,10 @@ from models import connect_db, User, db, Listing, ImagePath
 load_dotenv()
 
 CURR_USER_KEY = "curr_user"
+BUCKET = os.environ.get('BUCKET')
+
+BUCKET_BASE_URL = f'https://{BUCKET}.s3.us-east-2.amazonaws.com/'
+print(BUCKET_BASE_URL)
 
 app = Flask(__name__)
 
@@ -50,7 +54,6 @@ s3 = boto3.client(
 
 def add_image_to_bucket(content, img, listing_id):
     path = f'listing/{listing_id}/{img}'
-    print(path, "####################################")
     s3.put_object(Bucket=os.environ.get('BUCKET'),
                   Key=path, Body=content)
     return path
@@ -63,11 +66,6 @@ def add_pp_to_bucket(content, image, user_id):
     return path
 
 
-def add_listing_image(listing, image):
-    path = f'listing/{listing}/{image}'
-    with open(image, 'rb') as data:
-        s3.put_object(Bucket=os.environ.get('BUCKET'), Key=path, Body=data)
-        return path
 
 ##############################################################################
 # User signup/login/logout
@@ -128,10 +126,15 @@ def signup():
                 password=form.password.data,
             )
             db.session.commit()
+
             image_file = request.files['image']
             image_content = image_file.read()
-            user.image_path = add_pp_to_bucket(
-                image_content, form.image.data, user.id)
+            path = add_pp_to_bucket(
+                image_content, form.image.data.filename, user.id)
+
+            user.image_path = path
+            db.session.commit()
+
 
         except IntegrityError:
             flash("Username already taken", 'danger')
@@ -205,7 +208,7 @@ def list_users():
 
     users = User.query.all()
 
-    return render_template("users/users.html", users=users)
+    return render_template("users/users.html", users=users, url = BUCKET_BASE_URL)
 
 
 @app.get('/users/<int:user_id>')
@@ -218,7 +221,7 @@ def show_user(user_id):
 
     user = User.query.get_or_404(user_id)
 
-    return render_template("users/profile.html", user=user)
+    return render_template("users/profile.html", user=user, url= BUCKET_BASE_URL)
 
 
 @app.route('/users/<int:user_id>/edit', methods=["GET", "POST"])
@@ -242,7 +245,7 @@ def edit_user(user_id):
         except IntegrityError:
             flash("Try Again", "danger")
 
-    return render_template("users/edit.html", form=form, user_id=user.id)
+    return render_template("users/edit.html", form=form, user_id=user.id, url = BUCKET_BASE_URL)
 
 
 @app.post("/users/delete")
@@ -273,7 +276,7 @@ def list_listings():
 
     listings = Listing.query.all()
 
-    return render_template("listings/listing.html", listings=listings)
+    return render_template("listings/listing.html", listings=listings, url = BUCKET_BASE_URL)
 
 
 @app.route('/add-listing', methods=["GET", "POST"])
@@ -296,28 +299,26 @@ def add_listing():
 
     if form.validate_on_submit():
 
-        # try:
-        listing = Listing.register(
-            title=form.title.data,
-            description=form.description.data,
-            address=form.address.data,
-            daily_price=form.daily_price.data,
-            user_id=g.user.id
-        )
-        db.session.commit()
-        image_file = request.files['image']
-        image_content = image_file.read()
-        print(form.image.data.filename, "@@@@@@@@@@@@@@")
-        path = add_image_to_bucket(
-            image_content, form.image.data.filename, listing.id)
-        print("^^^^^^^^^^^^^^^^ path", path)
-        new_path = ImagePath.create(path, listing.id)
-        db.session.add(new_path)
-        db.session.commit()
+        try:
+            listing = Listing.register(
+                title=form.title.data,
+                description=form.description.data,
+                address=form.address.data,
+                daily_price=form.daily_price.data,
+                user_id=g.user.id
+            )
+            db.session.commit()
 
-        # except IntegrityError:
-        #     print("####################")
-        #     return render_template('listings/add-listing.html', form=form)
+            image_file = request.files['image']
+            image_content = image_file.read()
+            path = add_image_to_bucket(
+                image_content, form.image.data.filename, listing.id)
+            new_path = ImagePath.create(path, listing.id)
+            db.session.add(new_path)
+            db.session.commit()
+
+        except IntegrityError:
+            return render_template('listings/add-listing.html', form=form)
 
         return redirect("/")
 
@@ -335,7 +336,45 @@ def show_listing(listing_id):
 
     listing = Listing.query.get_or_404(listing_id)
 
-    return render_template("listings/info.html", listing=listing)
+    return render_template("listings/info.html", listing=listing, url = BUCKET_BASE_URL)
+
+
+
+@app.route('/listings/<int:listing_id>/edit', methods=["GET", "POST"])
+def edit_listing(listing_id):
+    """Edit user profile"""
+    listing = Listing.query.get_or_404(listing_id)
+
+    if not g.user or g.user.id != listing.user_id :
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+
+    form = EditListingForm(obj=listing)
+    if form.validate_on_submit():
+        try:
+            listing.title=form.title.data,
+            listing.description=form.description.data,
+            listing.address=form.address.data,
+            listing.daily_price=form.daily_price.data,
+
+            db.session.commit()
+
+            image_file = request.files['image']
+            image_content = image_file.read()
+            path = add_image_to_bucket(
+                image_content, form.image.data.filename, listing.id)
+            new_path = ImagePath.create(path, listing.id)
+            db.session.add(new_path)
+            db.session.commit()
+            flash("Listing Updated.", "success")
+            return redirect(f'/listings/{listing.id}')
+
+        except IntegrityError:
+            return render_template('listings/edit-listing.html', form=form)
+
+
+    return render_template("listings/edit-listing.html", form=form)
 
 
 # @app.route('/add-listing', methods=['GET', 'POST'])

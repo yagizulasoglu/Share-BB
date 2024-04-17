@@ -15,7 +15,7 @@
             <p>{{ listing.description }}</p>
 
             {% for image in listing.images %}
-            <img src="https://sharebandb1234.s3.amazonaws.com/{{image.path}}" alt="">
+            <img src="{{url}}{{image.path}}" alt="">
             {% endfor %}
       </a>
     </div>
