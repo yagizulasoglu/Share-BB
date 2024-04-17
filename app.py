@@ -15,8 +15,7 @@ from flask import Flask, render_template, flash, redirect, session, g, jsonify, 
 # from sqlalchemy import or_
 
 
-from models import connect_db
-
+from models import connect_db, User
 load_dotenv()
 
 app = Flask(__name__)
@@ -36,6 +35,8 @@ if app.debug:
 
 # toolbar = DebugToolbarExtension(app)
 
+connect_db(app)
+
 s3 = boto3.client(
     "s3",
     "us-east-1",
@@ -44,10 +45,10 @@ s3 = boto3.client(
 )
 
 
-def add_image_to_bucket(content, filename):
+def add_image_to_bucket(content, filename, listing):
     print(filename, "**************")
     s3.put_object(Bucket=os.environ.get('BUCKET'),
-                  Key=filename, Body=content)
+                  Key=f'{listing}/{filename}', Body=content)
 
 
 @app.route('/add-listing', methods=['GET', 'POST'])
@@ -59,7 +60,7 @@ def add_listing():
         filename = form.Image.data.filename
         image_file = request.files['Image']
         image_content = image_file.read()
-        add_image_to_bucket(image_content, filename)
+        add_image_to_bucket(image_content, filename, 'pear')
 
     else:
         return render_template('add-listing.html', form=form)
@@ -84,4 +85,4 @@ def get_photo():
     # image_data = image['Body'].read()
     # image = Image.open(BytesIO(image_data))
 
-    return render_template('get-photo.html', image_src=image_src)
+    return render_template('get-photo.html', image_src=image_src,)

@@ -37,7 +37,7 @@ class User(db.Model):
 
     image_url = db.Column(
         db.String(255),
-        nullable=False,
+        # nullable=False,
         default=DEFAULT_IMAGE_URL,
     )
 
@@ -45,6 +45,9 @@ class User(db.Model):
         db.String(100),
         nullable=False,
     )
+
+    def __repr__(self):
+        return f"<User #{self.id}: {self.username}, {self.email}>"
 
     @classmethod
     def signup(cls, username, email, password, image_url=DEFAULT_IMAGE_URL):
@@ -87,41 +90,60 @@ class User(db.Model):
         return False
 
 
-class Listing(db.Model):
-    """Rental place in the system"""
+# class Listing(db.Model):
+#     """Rental place in the system"""
 
-    __tablename__ = "listings"
+#     __tablename__ = "listings"
 
-    id = db.Column(
-        db.Integer,
-        primary_key=True,
-        autoincrement=True,
-    )
+#     id = db.Column(
+#         db.Integer,
+#         primary_key=True,
+#         autoincrement=True,
+#     )
 
-    title = db.Column(
-        db.String(60),
-        nullable=False,
-    )
+#     title = db.Column(
+#         db.String(60),
+#         nullable=False,
+#     )
 
-    description = db.Column(
-        db.Text,
-        nullable=False,
-        default="",
-    )
+#     description = db.Column(
+#         db.Text,
+#         nullable=False,
+#         default="",
+#     )
 
-    address = db.Column(
-        db.String(150),
-        nullable=False,
-        unique=True,
-    )
+#     address = db.Column(
+#         db.String(150),
+#         nullable=False,
+#         unique=True,
+#     )
 
-    user_id = db.Column(
-        db.Integer,
-        db.ForeignKey('users.id', ondelete='CASCADE'),
-        nullable=False,
-    )
+#     user_id = db.Column(
+#         db.Integer,
+#         db.ForeignKey('users.id', ondelete='CASCADE'),
+#         nullable=False,
+#     )
 
-    user = db.relationship('User', backref="listings")
+#     user = db.relationship('User', backref="listings")
+#     image_paths = db.relationship('Image_Path', backref='listings')
+
+
+
+# class Image_Path(db.Model):
+#     __tablename__ = "image_paths"
+
+#     path = db.Column(
+#         db.Text,
+#         primary_key=True,
+#     )
+
+#     listing_id = db.column(
+#         db.Integer,
+#         db.ForeignKey('listing.id', ondelete='CASCADE'),
+#         )
+
+
+
 
 
 def connect_db(app):
