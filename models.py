@@ -118,6 +118,11 @@ class Listing(db.Model):
         unique=True,
     )
 
+    daily_price = db.Column(
+        db.Integer,
+        nullable=False
+    )
+
     user_id = db.Column(
         db.Integer,
         db.ForeignKey('users.id', ondelete='CASCADE'),
@@ -127,6 +132,25 @@ class Listing(db.Model):
     user = db.relationship('User', backref="listings")
 
     images = db.relationship('ImagePath', backref='listings')
+
+
+
+
+    @classmethod
+    def register(cls,title, description, address, daily_price, user_id):
+        """Registers Listing."""
+
+
+        listing = Listing(
+            title=title,
+            description=description,
+            address=address,
+            daily_price=daily_price,
+            user_id = user_id
+        )
+
+        db.session.add(listing)
+        return listing
 
 
 class ImagePath(db.Model):

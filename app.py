@@ -4,7 +4,7 @@ import os
 from PIL import Image
 from io import BytesIO
 from dotenv import load_dotenv
-from forms import AddAListingForm, CSRFProtection, UserAddForm, LoginForm, UserUpdateForm
+from forms import AddListingForm, CSRFProtection, UserAddForm, LoginForm, UserUpdateForm
 from sqlalchemy.exc import IntegrityError
 
 import boto3
@@ -251,6 +251,46 @@ def list_listings():
     return render_template("listings/listing.html", listings=listings)
 
 
+@app.route('/add-listing', methods=["GET", "POST"])
+def add_listing():
+    """Handle user signup.
+
+    Create new user and add to DB. Redirect to home page.
+
+    If form not valid, present form.
+
+    If the there already is a user with that username: flash message
+    and re-present form.
+    """
+
+
+    form = AddListingForm()
+
+    if form.validate_on_submit():
+
+        try:
+            listing = Listing.register(
+                title=form.title.data,
+                description=form.description.data,
+                address=form.address.data,
+                daily_price = form.daily_price.data,
+                user_id = g.user.id
+            )
+            db.session.commit()
+            path = add_listing_image(form.image.data)
+            # listing.images.
+
+        except IntegrityError:
+            flash("Username already taken", 'danger')
+            return render_template('users/signup.html', form=form)
+
+
+        return redirect("/")
+
+    else:
+        return render_template('listings/add-listing.html', form=form)
+
+
 @app.get('/listings/<int:listing_id>')
 def show_listing(listing_id):
     """Show a listing"""
@@ -270,23 +310,23 @@ def add_image_to_bucket(content, filename, listing):
                   Key=f'{listing}/{filename}', Body=content)
 
 
-@app.route('/add-listing', methods=['GET', 'POST'])
-def add_listing():
+# @app.route('/add-listing', methods=['GET', 'POST'])
+# def add_listing():
 
-    form = AddAListingForm()
+#     form = AddAListingForm()
 
-    if form.validate_on_submit():
-        filename = form.Image.data.filename
-        image_file = request.files['Image']
-        image_content = image_file.read()
-        add_image_to_bucket(image_content, filename, 'pear')
+#     if form.validate_on_submit():
+#         filename = form.Image.data.filename
+#         image_file = request.files['Image']
+#         image_content = image_file.read()
+#         add_image_to_bucket(image_content, filename, 'pear')
 
-    else:
-        return render_template('add-listing.html', form=form)
+#     else:
+#         return render_template('add-listing.html', form=form)
 
-    print(form.Image.data, "#############################")
+#     print(form.Image.data, "#############################")
 
-    return render_template('add-listing.html', form=form)
+#     return render_template('add-listing.html', form=form)
 
 
 @app.get('/get-photo')

@@ -35,6 +35,7 @@ l1 = Listing(
     title="Beautiful House with a Massive Backyard",
     description='Best House in the Town',
     address="3966 24th St",
+    daily_price = 1000000,
     user_id=u1_id
 )
 
@@ -42,6 +43,7 @@ l2 = Listing(
     title='Apartment with a Huge Balcony',
     description='A cozy apartment with a balcony in the downtown.',
     address='440 Grand Ave',
+    daily_price = 5,
     user_id=u1_id
 )
 

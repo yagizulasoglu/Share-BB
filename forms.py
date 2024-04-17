@@ -1,17 +1,11 @@
 """Forms for ShareB&B."""
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, FileField
+from wtforms import StringField, PasswordField, FileField, IntegerField
 from wtforms.validators import InputRequired, Email, Length, URL, Optional
 
 
 class CSRFProtection(FlaskForm):
     """CSRFProtection form, intentionally has no fields."""
-
-
-class AddAListingForm(FlaskForm):
-    """Form for adding/editing messages."""
-
-    Image = FileField('text', validators=[InputRequired()])
 
 
 class UserAddForm(FlaskForm):
@@ -56,6 +50,36 @@ class LoginForm(FlaskForm):
         'Password',
         validators=[InputRequired(), Length(min=6, max=50)],
     )
+
+
+
+
+
+class AddListingForm(FlaskForm):
+    """Login form."""
+
+    title = StringField(
+        'Title',
+        validators=[InputRequired(), Length(max=30)],
+    )
+    description = StringField(
+        'Description',
+        validators=[InputRequired(), Length(max=1000)],
+    )
+
+    address = StringField(
+        'Address',
+        validators=[InputRequired(), Length( max=75)],
+    )
+
+    daily_price = IntegerField(
+        'Daily Price',
+        validators=[InputRequired()],
+    )
+
+    image = FileField('text', validators=[InputRequired()])
+
+
 
 
 class CSRFForm (FlaskForm):
