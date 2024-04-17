@@ -4,6 +4,10 @@ from wtforms import StringField, PasswordField, FileField
 from wtforms.validators import InputRequired, Email, Length, URL, Optional
 
 
+class CSRFProtection(FlaskForm):
+    """CSRFProtection form, intentionally has no fields."""
+
+
 class AddAListingForm(FlaskForm):
     """Form for adding/editing messages."""
 
@@ -46,7 +50,6 @@ class UserUpdateForm(UserAddForm):
     )
 
 
-
 class LoginForm(FlaskForm):
     """Login form."""
 
@@ -60,5 +63,6 @@ class LoginForm(FlaskForm):
         validators=[InputRequired(), Length(min=6, max=50)],
     )
 
-# class CSRFForm (FlaskForm):
+
+class CSRFForm (FlaskForm):
     """Form for CSRF validation only"""

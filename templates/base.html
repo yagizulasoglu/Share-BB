@@ -28,6 +28,12 @@
       </div>
 
       <ul class="nav navbar-nav navbar-right">
+        {% if g.user %}
+        <form action="/logout" method="POST">
+          <button type="submit">Logout</button>
+        </form>
+
+        {% endif %}
 
   </nav>
 
