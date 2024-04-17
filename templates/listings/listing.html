@@ -8,22 +8,23 @@
     <div class="row">
 
       {% for listing in listings %}
+      <a href="/listings/{{listing.id}}">
+        <div class="col-lg-4 col-md-6 col-12">
+          <div class="card-contents">
+            <p>{{ listing.title }}</p>
+            <p>{{ listing.description }}</p>
 
-      <div class="col-lg-4 col-md-6 col-12">
-        <div class="card-contents">
-          <p>{{ listing.title }}</p>
-          <p>{{ listing.description }}</p>
-
-          {% for image in listing.images %}
-          <img src="https://sharebandb123.s3.us-east-2.amazonaws.com/{{image.path}}" alt="">
-          {% endfor %}
-          </a>
-        </div>
-
-        {% endfor %}
-
-      </div>
+            {% for image in listing.images %}
+            <img src="https://sharebandb1234.s3.amazonaws.com/{{image.path}}" alt="">
+            {% endfor %}
+      </a>
     </div>
+    </a>
+
+    {% endfor %}
+
   </div>
-  {% endif %}
-  {% endblock %}
+</div>
+</div>
+{% endif %}
+{% endblock %}

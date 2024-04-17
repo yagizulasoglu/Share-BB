@@ -52,13 +52,13 @@ l1_id = l1.id
 l2_id = l2.id
 
 i1 = ImagePath(
-    path = 'pear/filename',
-    listing_id = l1_id
+    path='xyz',
+    listing_id=l1_id
 )
 
 i2 = ImagePath(
-    path = 'test.jpeg',
-    listing_id = l2_id
+    path='test.jpeg',
+    listing_id=l2_id
 )
 
 db.session.add_all([i1, i2])

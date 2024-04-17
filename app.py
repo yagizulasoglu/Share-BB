@@ -4,7 +4,7 @@ import os
 from PIL import Image
 from io import BytesIO
 from dotenv import load_dotenv
-from forms import AddAListingForm, CSRFProtection, UserAddForm, LoginForm
+from forms import AddAListingForm, CSRFProtection, UserAddForm, LoginForm, UserUpdateForm
 from sqlalchemy.exc import IntegrityError
 
 import boto3
@@ -183,6 +183,60 @@ def list_users():
     return render_template("users/users.html", users=users)
 
 
+@app.get('/users/<int:user_id>')
+def show_user(user_id):
+    """Show user profile"""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    user = User.query.get_or_404(user_id)
+
+    return render_template("users/profile.html", user=user)
+
+
+@app.route('/users/<int:user_id>/edit', methods=["GET", "POST"])
+def edit_user(user_id):
+    """Edit user profile"""
+
+    if not g.user or not g.user.id != user_id:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    user = g.user
+    form = UserUpdateForm(obj=user)
+
+    if form.validate_on_submit():
+        user.email = form.email.data
+        user.image_url = form.image_url.data
+
+        try:
+            db.session.commit()
+            return redirect(f"/users/{user.id}")
+        except IntegrityError:
+            flash("Try Again", "danger")
+
+    return render_template("users/edit.html", form=form, user_id=user.id)
+
+
+@app.post("/users/delete")
+def delete_user():
+    """Delete a user"""
+
+    form = g.csrf_form
+
+    if not form.validate_on_submit() or not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    do_logout
+
+    db.session.delete(g.user)
+    db.session.commit()
+
+    flash("User deleted.", "success")
+    return redirect("/signup")
 
 
 @app.get('/listings')
@@ -194,12 +248,20 @@ def list_listings():
 
     listings = Listing.query.all()
 
-
-    return render_template("listings/listing.html", listings=listings, image_path = 'test.jpeg')
-
+    return render_template("listings/listing.html", listings=listings)
 
 
+@app.get('/listings/<int:listing_id>')
+def show_listing(listing_id):
+    """Show a listing"""
 
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    listing = Listing.query.get_or_404(listing_id)
+
+    return render_template("listings/info.html", listing=listing)
 
 
 def add_image_to_bucket(content, filename, listing):
@@ -245,3 +307,8 @@ def get_photo():
     return render_template('get-photo.html', image_src=image_src,)
 
 
+@app.errorhandler(404)
+def page_not_found(e):
+    """404 NOT FOUND page."""
+
+    return render_template('404.html'), 404

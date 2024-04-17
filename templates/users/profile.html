@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<img src="{{ user.image_url }}" alt="Image for {{ user.username }}" id="profile-avatar">
+<div class="row full-width">
+  <div class="container" style="max-width: 1300px;">
+    <div class="row justify-content-end">
+      <div class="col-9">
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm-3">
+    <h4 id="sidebar-username">@{{ user.username }}</h4>
+    <h6>Listings</h6>
+    {% for listing in user.listings %}
+    <a href="/listings/{{listing.id}}">{{listing.title}}</a>
+    {% endfor %}
+    <button>Message!</button>
+    {% if g.user.id == user.id %}
+    <form action="/users/delete" method="POST">
+      <button type="submit">Delete</button>
+    </form>
+    {% endif %}
+  </div>
+
+  {% block user_details %}
+  {% endblock %}
+</div>
+
+{% endblock %}

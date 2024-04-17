@@ -32,22 +32,16 @@ class UserAddForm(FlaskForm):
         validators=[InputRequired(), Length(min=6, max=50)],
     )
 
-    image_url = StringField(
-        '(Optional) Image URL',
-        validators=[Optional(), URL(), Length(max=255)]
-    )
+    image_url = FileField('text', validators=[InputRequired()])
 
 
-class UserUpdateForm(UserAddForm):
+class UserUpdateForm(FlaskForm):
     '''Form for updating a user'''
-    bio = StringField(
-        "(Optional) Bio",
-        validators=[Optional(), Length(max=255)]
+    email = StringField(
+        'E-mail',
+        validators=[InputRequired(), Email(), Length(max=50)],
     )
-    header_image_url = StringField(
-        '(Optional) Image URL',
-        validators=[Optional(), URL(), Length(max=255)]
-    )
+    image_url = FileField('text', validators=[InputRequired()])
 
 
 class LoginForm(FlaskForm):
