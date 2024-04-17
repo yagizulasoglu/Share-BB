@@ -26,7 +26,7 @@ class UserAddForm(FlaskForm):
         validators=[InputRequired(), Length(min=6, max=50)],
     )
 
-    image_url = FileField('text', validators=[InputRequired()])
+    image = FileField('text', validators=[InputRequired()])
 
 
 class UserUpdateForm(FlaskForm):
@@ -52,9 +52,6 @@ class LoginForm(FlaskForm):
     )
 
 
-
-
-
 class AddListingForm(FlaskForm):
     """Login form."""
 
@@ -69,7 +66,7 @@ class AddListingForm(FlaskForm):
 
     address = StringField(
         'Address',
-        validators=[InputRequired(), Length( max=75)],
+        validators=[InputRequired(), Length(max=75)],
     )
 
     daily_price = IntegerField(
@@ -78,8 +75,6 @@ class AddListingForm(FlaskForm):
     )
 
     image = FileField('text', validators=[InputRequired()])
-
-
 
 
 class CSRFForm (FlaskForm):

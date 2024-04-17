@@ -16,7 +16,7 @@ from flask import Flask, render_template, flash, redirect, session, g, jsonify, 
 # from sqlalchemy import or_
 
 
-from models import connect_db, User, db, Listing
+from models import connect_db, User, db, Listing, ImagePath
 load_dotenv()
 
 CURR_USER_KEY = "curr_user"
@@ -48,8 +48,30 @@ s3 = boto3.client(
 )
 
 
+def add_image_to_bucket(content, img, listing_id):
+    path = f'listing/{listing_id}/{img}'
+    print(path, "####################################")
+    s3.put_object(Bucket=os.environ.get('BUCKET'),
+                  Key=path, Body=content)
+    return path
+
+
+def add_pp_to_bucket(content, image, user_id):
+    path = f'user/{user_id}/{image}'
+    s3.put_object(Bucket=os.environ.get('BUCKET'),
+                  Key=path, Body=content)
+    return path
+
+
+def add_listing_image(listing, image):
+    path = f'listing/{listing}/{image}'
+    with open(image, 'rb') as data:
+        s3.put_object(Bucket=os.environ.get('BUCKET'), Key=path, Body=data)
+        return path
+
 ##############################################################################
 # User signup/login/logout
+
 
 @app.before_request
 def add_user_to_g():
@@ -104,9 +126,12 @@ def signup():
                 username=form.username.data,
                 email=form.email.data,
                 password=form.password.data,
-                image_url=form.image_url.data or User.image_url.default.arg,
             )
             db.session.commit()
+            image_file = request.files['image']
+            image_content = image_file.read()
+            user.image_path = add_pp_to_bucket(
+                image_content, form.image.data, user.id)
 
         except IntegrityError:
             flash("Username already taken", 'danger')
@@ -263,27 +288,36 @@ def add_listing():
     and re-present form.
     """
 
-
     form = AddListingForm()
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
 
     if form.validate_on_submit():
 
-        try:
-            listing = Listing.register(
-                title=form.title.data,
-                description=form.description.data,
-                address=form.address.data,
-                daily_price = form.daily_price.data,
-                user_id = g.user.id
-            )
-            db.session.commit()
-            path = add_listing_image(form.image.data)
-            # listing.images.
+        # try:
+        listing = Listing.register(
+            title=form.title.data,
+            description=form.description.data,
+            address=form.address.data,
+            daily_price=form.daily_price.data,
+            user_id=g.user.id
+        )
+        db.session.commit()
+        image_file = request.files['image']
+        image_content = image_file.read()
+        print(form.image.data.filename, "@@@@@@@@@@@@@@")
+        path = add_image_to_bucket(
+            image_content, form.image.data.filename, listing.id)
+        print("^^^^^^^^^^^^^^^^ path", path)
+        new_path = ImagePath.create(path, listing.id)
+        db.session.add(new_path)
+        db.session.commit()
 
-        except IntegrityError:
-            flash("Username already taken", 'danger')
-            return render_template('users/signup.html', form=form)
-
+        # except IntegrityError:
+        #     print("####################")
+        #     return render_template('listings/add-listing.html', form=form)
 
         return redirect("/")
 
@@ -302,12 +336,6 @@ def show_listing(listing_id):
     listing = Listing.query.get_or_404(listing_id)
 
     return render_template("listings/info.html", listing=listing)
-
-
-def add_image_to_bucket(content, filename, listing):
-    print(filename, "**************")
-    s3.put_object(Bucket=os.environ.get('BUCKET'),
-                  Key=f'{listing}/{filename}', Body=content)
 
 
 # @app.route('/add-listing', methods=['GET', 'POST'])

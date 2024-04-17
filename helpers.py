@@ -1,4 +1,5 @@
-
+import os
+import boto3
 
 
 s3 = boto3.client(
@@ -9,19 +10,17 @@ s3 = boto3.client(
 )
 
 
-with open('test.jpeg', 'rb') as data:
-    s3.put_object(Bucket=os.environ.get('BUCKET'), Key='test.jpeg', Body=data)
+# with open('test.jpeg', 'rb') as data:
+#     s3.put_object(Bucket=os.environ.get('BUCKET'), Key='test.jpeg', Body=data)
 
 
-image = s3.get_object(Bucket=os.environ.get('BUCKET'), Key='test.jpeg')
-breakpoint()
-image_data = image['Body'].read()
-image = Image.open(BytesIO(image_data))
-image.show()
+# image = s3.get_object(Bucket=os.environ.get('BUCKET'), Key='test.jpeg')
+# image_data = image['Body'].read()
+# image = Image.open(BytesIO(image_data))
+# image.show()
 
 
-
-def add_listing_image(listing,image):
+def add_listing_image(listing, image):
     path = f'listing/{listing}/{image}'
     with open(image, 'rb') as data:
         s3.put_object(Bucket=os.environ.get('BUCKET'), Key=path, Body=data)

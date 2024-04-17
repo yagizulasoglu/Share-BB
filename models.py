@@ -35,10 +35,10 @@ class User(db.Model):
         unique=True,
     )
 
-    image_url = db.Column(
+    image_path = db.Column(
         db.String(255),
         # nullable=False,
-        default=DEFAULT_IMAGE_URL,
+        default="test.jpeg",
     )
 
     password = db.Column(
@@ -50,7 +50,7 @@ class User(db.Model):
         return f"<User #{self.id}: {self.username}, {self.email}>"
 
     @classmethod
-    def signup(cls, username, email, password, image_url=DEFAULT_IMAGE_URL):
+    def signup(cls, username, email, password):
         """Sign up user.
 
         Hashes password and adds user to session.
@@ -62,7 +62,6 @@ class User(db.Model):
             username=username,
             email=email,
             password=hashed_pwd,
-            image_url=image_url,
         )
 
         db.session.add(user)
@@ -115,7 +114,6 @@ class Listing(db.Model):
     address = db.Column(
         db.String(150),
         nullable=False,
-        unique=True,
     )
 
     daily_price = db.Column(
@@ -133,20 +131,16 @@ class Listing(db.Model):
 
     images = db.relationship('ImagePath', backref='listings')
 
-
-
-
     @classmethod
-    def register(cls,title, description, address, daily_price, user_id):
+    def register(cls, title, description, address, daily_price, user_id):
         """Registers Listing."""
-
 
         listing = Listing(
             title=title,
             description=description,
             address=address,
             daily_price=daily_price,
-            user_id = user_id
+            user_id=user_id
         )
 
         db.session.add(listing)
@@ -167,6 +161,17 @@ class ImagePath(db.Model):
         nullable=False,
     )
 
+    @classmethod
+    def create(cls, path, listing_id):
+        """Creates a Path."""
+
+        imagepath = ImagePath(
+            path=path,
+            listing_id=listing_id
+        )
+
+        db.session.add(imagepath)
+        return imagepath
 
 
 def connect_db(app):
