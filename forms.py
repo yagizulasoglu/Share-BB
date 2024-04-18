@@ -119,8 +119,6 @@ class ReserveListingForm(FlaskForm):
 class ConfirmForm(FlaskForm):
     """Edit listing form."""
 
-    # my_field = fields.StringField('Label', render_kw={'readonly': True})
-
     start_date = DateField(
         'Start Date',
         validators=[InputRequired()],
@@ -135,18 +133,6 @@ class ConfirmForm(FlaskForm):
 
     total_cost = IntegerField(
         'Total Cost',
-        validators=[InputRequired()],
-        render_kw={'readonly': True},
-    )
-
-    user_id = IntegerField(
-        "User",
-        validators=[InputRequired()],
-        render_kw={'readonly': True},
-    )
-
-    listing_id = IntegerField(
-        "Listing",
         validators=[InputRequired()],
         render_kw={'readonly': True},
     )

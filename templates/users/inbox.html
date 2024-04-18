@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block body_class %}onboarding{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-md-center">
+  <div class="col-md-7 col-lg-5">
+    <h2 class="join-message">Inbox</h2>
+    <ul>
+      {% for msg in messages %}
+      {% if msg.sender_id == g.user.id %}
+      <li>
+        <p>You: {{msg.content}}<a href="/users/{{msg.recipient.id}}/message"> to {{msg.recipient.username}}</a></p>
+      </li>
+      {% else %}
+      <li>
+        <p><a href="/users/{{msg.sender.id}}/message">{{msg.sender.username}}</a> from {{msg.content}}</p>
+        <a href="/users/{{msg.sender.id}}/message">{{msg.sender.username}}</a>
+      </li>
+      {% endif %}
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+{% endblock %}

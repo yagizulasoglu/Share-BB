@@ -20,12 +20,12 @@
       <button type="submit">Delete</button>
     </form>
     {% else %}
-    <a href="/reservations/{{listing.id}}">
-      Book Now!
-    </a>
+    <button><a href="/reservations/{{listing.id}}">
+        Book Now!
+      </a></button>
+    <button><a href="/users/{{listing.user.id}}">{{listing.user.username}}</a></button>
+    <button><a href="/users/{{listing.user.id}}/message">Message {{listing.user.username}} about listing.</a></button>
     {% endif %}
-    <a href="/users/{{listing.user.id}}">{{listing.user.username}}</a>
-    <a href="/users/{{listing.user.id}}/message">Message {{listing.user.username}} about listing.</a>
   </div>
 </div>
 

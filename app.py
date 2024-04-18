@@ -68,9 +68,6 @@ def add_pp_to_bucket(content, image, user_id):
     return path
 
 
-
-
-
 ##############################################################################
 # User signup/login/logout
 
@@ -109,7 +106,7 @@ def do_logout():
 @app.get('/')
 def homepage():
 
-    return render_template('home.html', url =BUCKET_BASE_URL)
+    return render_template('home.html', url=BUCKET_BASE_URL)
 
 
 @app.route('/signup', methods=["GET", "POST"])
@@ -199,7 +196,6 @@ def logout():
     return redirect("/login")
 
 
-
 ##############################################################################
 # User routes:
 
@@ -252,6 +248,22 @@ def edit_user(user_id):
             flash("Try Again", "danger")
 
     return render_template("users/edit.html", form=form, user_id=user.id, url=BUCKET_BASE_URL)
+
+
+@app.get('/users/<int:user_id>/inbox')
+def user_inbox(user_id):
+
+    if not g.user or not user_id == g.user.id:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    messages = Message.query.filter(
+        or_(Message.sender_id == g.user.id,
+            Message.recipient_id == g.user.id
+            )
+    ).all()
+
+    return render_template("users/inbox.html", messages=messages)
 
 
 @app.route('/users/<int:user_id>/message', methods=["GET", "POST"])
@@ -509,32 +521,32 @@ def book_listing(listing_id):
     form = ReserveListingForm()
     if form.validate_on_submit():
         # try:
-            start_date = form.start_date.data
-            end_date = form.end_date.data
-            if ((end_date - start_date).days <= 0 or not availablity(listing_id, start_date, end_date)):
-                flash("Invalid Request.", "danger")
-                return render_template("listings/book-reservation.html", listing=listing, url=BUCKET_BASE_URL, form=form)
+        start_date = form.start_date.data
+        end_date = form.end_date.data
+        if ((end_date - start_date).days <= 0 or not availablity(listing_id, start_date, end_date)):
+            flash("Invalid Request.", "danger")
+            return render_template("listings/book-reservation.html", listing=listing, url=BUCKET_BASE_URL, form=form)
 
-            total_cost = listing.daily_price * (end_date - start_date).days
+        total_cost = listing.daily_price * (end_date - start_date).days
 
-            reservation = Reservation.book(
-                user_id=g.user.id,
-                listing_id=listing_id,
-                start_date=start_date,
-                end_date=end_date,
-                total_cost=total_cost
-            )
-            # db.session.add(reservation)
-            # db.session.commit()
+        reservation = Reservation.book(
+            user_id=g.user.id,
+            listing_id=listing_id,
+            start_date=start_date,
+            end_date=end_date,
+            total_cost=total_cost
+        )
+        # db.session.add(reservation)
+        # db.session.commit()
 
-            form1 = ConfirmForm(obj=reservation)
+        form1 = ConfirmForm(obj=reservation)
 
-            # flash("Reservation Made.", "success")
-            # return render_template("listings/confirmation.html", form=form1)
+        # flash("Reservation Made.", "success")
+        # return render_template("listings/confirmation.html", form=form1)
 
         # except IntegrityError:
         #     flash("A problem occured.", "danger")
-            return render_template("listings/confirmation.html", listing=listing, url=BUCKET_BASE_URL, form=form1)
+        return render_template("listings/confirmation.html", listing=listing, url=BUCKET_BASE_URL, form=form1)
 
     return render_template("listings/book-reservation.html", listing=listing, url=BUCKET_BASE_URL, form=form)
 

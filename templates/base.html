@@ -6,8 +6,6 @@
   <title>Share B and B</title>
 
   <link rel="stylesheet" href="https://unpkg.com/bootstrap@5/dist/css/bootstrap.css">
-  <!-- Option 1: Include in HTML -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
   <script src="https://unpkg.com/jquery"></script>
   <script src="https://unpkg.com/bootstrap"></script>
 
@@ -23,20 +21,21 @@
 
       <div class="navbar-header">
         <a href="/" class="navbar-brand">
-          <img src="/static/images/warbler-logo.png" alt="logo">
-          <span>Share</span>
+          <img src="https://sharebandb1234.s3.amazonaws.com/images.jpg" alt="logo">
+          <span>Share B&B</span>
         </a>
       </div>
 
       <ul class="nav navbar-nav navbar-right">
         {% if g.user %}
-
+        <button><a href="/users/{{g.user.id}}">Profile</a></button>
         <form class="navbar-form navbar-end" action="/listings">
           <input name="q" class="form-control" placeholder="Search BB" aria-label="Search" id="search">
           <button class="btn btn-default">
             <span class="bi bi-search"></span>
           </button>
         </form>
+        <button><a href="/users/{{g.user.id}}/inbox">Inbox</a></button>
         <form action="/logout" method="POST">
           <button type="submit">Logout</button>
         </form>

@@ -20,26 +20,19 @@
         </a>
         <ul class="user-stats nav nav-pills">
           <li class="stat">
-            <p class="small">Messages</p>
+            <p class="small">Listings</p>
             <h4>
               <a href="/users/{{ g.user.id }}">
-                {{ g.user.messages | length }}
+                {{ g.user.listings | length }}
               </a>
             </h4>
           </li>
+
           <li class="stat">
-            <p class="small">Following</p>
+            <p class="small">Reservations</p>
             <h4>
-              <a href="/users/{{ g.user.id }}/following">
-                {{ g.user.following | length }}
-              </a>
-            </h4>
-          </li>
-          <li class="stat">
-            <p class="small">Followers</p>
-            <h4>
-              <a href="/users/{{ g.user.id }}/followers">
-                {{ g.user.followers | length }}
+              <a href="/users/{{ g.user.id }}">
+                {{ g.user.reservations | length }}
               </a>
             </h4>
           </li>
