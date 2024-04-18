@@ -205,6 +205,18 @@ class Message(db.Model):
     recipient = db.relationship(
         'User', foreign_keys=[recipient_id], backref='received_messages')
 
+    @classmethod
+    def message(cls, sender_id, recipient_id, content):
+        """Creates a Reservation."""
+
+        message = Message(
+            sender_id=sender_id,
+            recipient_id=recipient_id,
+            content=content,
+        )
+
+        return message
+
 
 class Reservation(db.Model):
     __tablename__ = "reservations"
