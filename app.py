@@ -6,7 +6,7 @@ from io import BytesIO
 from dotenv import load_dotenv
 from forms import AddListingForm, CSRFProtection, UserAddForm, LoginForm, UserUpdateForm, EditListingForm, ReserveListingForm, MessageForm
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 from datetime import date, datetime
 
 import boto3
@@ -18,7 +18,7 @@ from flask import Flask, render_template, flash, redirect, session, g, jsonify, 
 # from sqlalchemy import or_
 
 
-from models import connect_db, User, db, Listing, ImagePath, Reservation
+from models import connect_db, User, db, Listing, ImagePath, Reservation, Message
 load_dotenv()
 
 CURR_USER_KEY = "curr_user"
@@ -255,7 +255,34 @@ def message_user(user_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    form = MessageForm
+    form = MessageForm()
+
+
+    # messages = Message.query.filter(and_(
+    #         Message.sender_id == (g.user.id),
+    #         Message.recipient_id ==(user_id),
+    #     )).all()
+
+    messages = Message.query.filter(
+        or_(
+            and_(
+                Message.sender_id == g.user.id,
+                Message.recipient_id == user_id
+            ),
+            and_(
+                Message.sender_id == user_id,
+                Message.recipient_id == g.user.id
+            )
+        )
+    ).all()
+
+
+
+    # messages1 = Message.query.filter(and_(Message.sender_id.like({g.user.id}),Message.recipient_id.like({user_id})).all())
+
+    # messages2 = Message.query.filter(and_(Message.sender.like({user_id}),Message.recipient.like({g.user.id})).all())
+
+
 
     if form.validate_on_submit():
         sender_id = g.user.id
@@ -272,7 +299,9 @@ def message_user(user_id):
         db.session.commit()
 
         flash("Message sent.", "success")
-        return redirect(f'/users/{user_id}')
+        return redirect(f'/users/{user_id}/message')
+
+    return render_template("users/message.html", form=form, messages = messages)
 
 
 @app.post("/users/delete")

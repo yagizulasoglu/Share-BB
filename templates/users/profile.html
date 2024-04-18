@@ -22,6 +22,9 @@
     <a href="/listings/{{listing.id}}">{{listing.title}}</a>
     {% endfor %}
     {% endif %}
+    {% if g.user.id != user.id %}
+    <a href="/users/{{user.id}}/message">Message {{user.username}}.</a>
+    {% endif %}
     <button>Message!</button>
     {% if g.user.id == user.id %}
     <h4>My Reservations</h4>
