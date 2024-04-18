@@ -4,7 +4,7 @@ import os
 from PIL import Image
 from io import BytesIO
 from dotenv import load_dotenv
-from forms import AddListingForm, CSRFProtection, UserAddForm, LoginForm, UserUpdateForm, EditListingForm, ReserveListingForm, MessageForm
+from forms import AddListingForm, CSRFProtection, UserAddForm, LoginForm, UserUpdateForm, EditListingForm, ReserveListingForm, MessageForm, ConfirmForm
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import or_, and_
 from datetime import date, datetime
@@ -257,7 +257,6 @@ def message_user(user_id):
 
     form = MessageForm()
 
-
     # messages = Message.query.filter(and_(
     #         Message.sender_id == (g.user.id),
     #         Message.recipient_id ==(user_id),
@@ -276,13 +275,11 @@ def message_user(user_id):
         )
     ).all()
 
-
+    username = (User.query.get_or_404(user_id)).username
 
     # messages1 = Message.query.filter(and_(Message.sender_id.like({g.user.id}),Message.recipient_id.like({user_id})).all())
 
     # messages2 = Message.query.filter(and_(Message.sender.like({user_id}),Message.recipient.like({g.user.id})).all())
-
-
 
     if form.validate_on_submit():
         sender_id = g.user.id
@@ -301,7 +298,7 @@ def message_user(user_id):
         flash("Message sent.", "success")
         return redirect(f'/users/{user_id}/message')
 
-    return render_template("users/message.html", form=form, messages = messages)
+    return render_template("users/message.html", form=form, messages=messages, username=username)
 
 
 @app.post("/users/delete")
@@ -521,35 +518,59 @@ def book_listing(listing_id):
                 end_date=end_date,
                 total_cost=total_cost
             )
-            db.session.add(reservation)
-            db.session.commit()
+            # db.session.add(reservation)
+            # db.session.commit()
 
-            flash("Reservation Made.", "success")
-            return redirect(f'/listings/{listing.id}')
+            form1 = ConfirmForm(obj=reservation)
+
+            # flash("Reservation Made.", "success")
+            # return render_template("listings/confirmation.html", form=form1)
 
         except IntegrityError:
             flash("A problem occured.", "danger")
             return render_template("listings/book-reservation.html", listing=listing, url=BUCKET_BASE_URL, form=form)
 
-    return render_template("listings/book-reservation.html", listing=listing, url=BUCKET_BASE_URL, form=form)
+    return render_template("listings/book-reservation.html", listing_id=listing_id, url=BUCKET_BASE_URL, form=form)
 
 
-@ app.get('/get-photo')
-def get_photo():
+@ app.post('/reservations/confirmation/<int:listing_id>')
+def confirm_booking(listing_id):
+    """Confirm booking"""
 
-    # s3 = boto3.client(
-    #     "s3",
-    #     "us-east-1",
-    #     aws_access_key_id=os.environ.get('ACCESS_KEY'),
-    #     aws_secret_access_key=os.environ.get('AWS_SECRET_KEY'),
-    # )
+    start_date = datetime.strptime(request.form.get('start_date'), '%y/%m/%d')
+    end_date = datetime.strptime(request.form.get('end_date'), '%y/%m/%d')
 
-    image_src = "https://sharebandb1234.s3.amazonaws.com/test123.jpeg"
-    # breakpoint()
-    # image_data = image['Body'].read()
-    # image = Image.open(BytesIO(image_data))
+    listing = Listing.query.get_or_404(listing_id)
+    total_cost = listing.daily_price * (end_date - start_date).days
 
-    return render_template('get-photo.html', image_src=image_src,)
+    reservation = Reservation.book(
+        user_id=g.user.id,
+        listing_id=listing_id,
+        start_date=start_date,
+        end_date=end_date,
+        total_cost=total_cost
+    )
+
+    db.session.add(reservation)
+    db.session.commit()
+    redirect(f"/listings/{listing_id}")
+
+    @ app.get('/get-photo')
+    def get_photo():
+
+        # s3 = boto3.client(
+        #     "s3",
+        #     "us-east-1",
+        #     aws_access_key_id=os.environ.get('ACCESS_KEY'),
+        #     aws_secret_access_key=os.environ.get('AWS_SECRET_KEY'),
+        # )
+
+        image_src = "https://sharebandb1234.s3.amazonaws.com/test123.jpeg"
+        # breakpoint()
+        # image_data = image['Body'].read()
+        # image = Image.open(BytesIO(image_data))
+
+        return render_template('get-photo.html', image_src=image_src,)
 
 
 @ app.errorhandler(404)

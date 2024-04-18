@@ -8,9 +8,11 @@
 
 
 {%for msg in messages%}
-<p>{{msg.content}}</p>
-
-
+{% if msg.sender_id == g.user.id %}
+<p>You: {{msg.content}}</p>
+{% else %}
+<p>{{username}}: {{msg.content}}</p>
+{% endif %}
 {%endfor%}
 
 <div class="row justify-content-md-center">

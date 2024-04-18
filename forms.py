@@ -1,7 +1,7 @@
 """Forms for ShareB&B."""
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, FileField, IntegerField, DateField, TextAreaField
-from wtforms.validators import InputRequired, Email, Length, URL, Optional
+from wtforms.validators import InputRequired, Email, Length
 
 
 class CSRFProtection(FlaskForm):
@@ -113,6 +113,42 @@ class ReserveListingForm(FlaskForm):
     end_date = DateField(
         'End Date',
         validators=[InputRequired()],
+    )
+
+
+class ConfirmForm(FlaskForm):
+    """Edit listing form."""
+
+    # my_field = fields.StringField('Label', render_kw={'readonly': True})
+
+    start_date = DateField(
+        'Start Date',
+        validators=[InputRequired()],
+        render_kw={'readonly': True},
+    )
+
+    end_date = DateField(
+        'End Date',
+        validators=[InputRequired()],
+        render_kw={'readonly': True},
+    )
+
+    total_cost = IntegerField(
+        'Total Cost',
+        validators=[InputRequired()],
+        render_kw={'readonly': True},
+    )
+
+    user_id = IntegerField(
+        "User",
+        validators=[InputRequired()],
+        render_kw={'readonly': True},
+    )
+
+    listing_id = IntegerField(
+        "Listing",
+        validators=[InputRequired()],
+        render_kw={'readonly': True},
     )
 
 
