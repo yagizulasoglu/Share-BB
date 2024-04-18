@@ -18,9 +18,12 @@
             {% for image in listing.images %}
             <img src="{{url}}{{image.path}}" alt="">
             {% endfor %}
+          </a>
+        </div>
       </a>
-    </div>
-    </a>
+      <a href="/reservations/{{listing.id}}">
+        Book Now!
+      </a>
 
     {% endfor %}
 

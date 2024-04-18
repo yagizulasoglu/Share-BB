@@ -1,6 +1,7 @@
 """Initial data."""
 
-from models import User, Listing, db, ImagePath
+from models import User, Listing, db, ImagePath, Reservation
+from datetime import date
 
 
 db.drop_all()
@@ -63,7 +64,20 @@ i2 = ImagePath(
     listing_id=l2_id
 )
 
+
 db.session.add_all([i1, i2])
+db.session.commit()
+
+
+r1 = Reservation(
+    user_id=u1_id,
+    listing_id=l1_id,
+    start_date=date(2032,11,5),
+    end_date=date(2032,11,12),
+    total_cost=100
+)
+
+db.session.add_all([r1])
 db.session.commit()
 
 

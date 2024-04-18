@@ -4,9 +4,10 @@ import os
 from PIL import Image
 from io import BytesIO
 from dotenv import load_dotenv
-from forms import AddListingForm, CSRFProtection, UserAddForm, LoginForm, UserUpdateForm, EditListingForm
+from forms import AddListingForm, CSRFProtection, UserAddForm, LoginForm, UserUpdateForm, EditListingForm, ReserveListingForm
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import or_
+from datetime import date, datetime
 
 import boto3
 
@@ -424,6 +425,45 @@ def delete_listing(listing_id):
     #     print(form.Image.data, "#############################")
 
     #     return render_template('add-listing.html', form=form)
+
+@ app.route('/reservations/<int:listing_id>',  methods=["GET", "POST"])
+def book_listing(listing_id):
+    """Show a listing"""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    listing = Listing.query.get_or_404(listing_id)
+
+    # daily_price = listing.daily_price
+
+    form = ReserveListingForm()
+    if form.validate_on_submit():
+        try:
+            start_date = form.start_date.data,
+            end_date = form.end_date.data
+
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d')
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d')
+
+
+            print (end_date_obj-start_date_obj, 'ENDDATEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEe')
+
+            db.session.commit()
+
+
+            flash("Listing Updated.", "success")
+            return redirect(f'/listings/{listing.id}')
+
+        except IntegrityError:
+            return render_template("listings/book-reservation.html", listing=listing, url=BUCKET_BASE_URL, form = form)
+
+
+
+
+    return render_template("listings/book-reservation.html", listing=listing, url=BUCKET_BASE_URL, form = form)
+
 
 
 @ app.get('/get-photo')

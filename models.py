@@ -174,6 +174,64 @@ class ImagePath(db.Model):
         return imagepath
 
 
+class Reservation(db.Model):
+    __tablename__ = "reservations"
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False,
+    )
+
+    listing_id = db.Column(
+        db.Integer,
+        db.ForeignKey('listings.id', ondelete='CASCADE'),
+        nullable=False,
+    )
+
+    start_date = db.Column(
+        db.Date,
+        nullable=False
+    )
+
+    end_date = db.Column(
+        db.Date,
+        nullable=False
+    )
+    total_cost = db.Column(
+        db.Integer,
+        nullable=False
+    )
+
+    user = db.relationship('User', backref="reservations")
+    listing = db.relationship('Listing', backref="reservations")
+
+    @classmethod
+    def create(cls, user_id, listing_id, start_date, end_date, total_cost):
+        """Creates a Path."""
+
+        reservation = Reservation(
+            user_id=user_id,
+            listing_id=listing_id,
+            start_date=start_date,
+            end_date=end_date,
+            total_cost=total_cost
+        )
+
+        db.session.add(reservation)
+        return reservation
+
+
+
+
+
 def connect_db(app):
     """Connect this database to provided Flask app.
 

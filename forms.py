@@ -1,6 +1,6 @@
 """Forms for ShareB&B."""
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, FileField, IntegerField
+from wtforms import StringField, PasswordField, FileField, IntegerField, DateField
 from wtforms.validators import InputRequired, Email, Length, URL, Optional
 
 
@@ -100,6 +100,20 @@ class EditListingForm(FlaskForm):
     )
 
     image = FileField('text')
+
+
+class ReserveListingForm(FlaskForm):
+    """Edit listing form."""
+
+    start_date = DateField(
+        'Start Date',
+        validators=[InputRequired()],
+    )
+
+    end_date = DateField(
+        'End Date',
+        validators=[InputRequired()],
+    )
 
 
 class CSRFForm (FlaskForm):

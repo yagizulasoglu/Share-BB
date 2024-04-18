@@ -19,6 +19,10 @@
     <form action="/listings/{{listing.id}}/delete" method="POST">
       <button type="submit">Delete</button>
     </form>
+    {% else %}
+    <a href="/reservations/{{listing.id}}">
+      Book Now!
+    </a>
     {% endif %}
     <a href="/users/{{listing.user.id}}">{{listing.user.username}}</a>
   </div>
