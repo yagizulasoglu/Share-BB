@@ -129,7 +129,7 @@ class Listing(db.Model):
 
     user = db.relationship('User', backref="listings")
 
-    images = db.relationship('ImagePath', backref='listings',)
+    images = db.relationship('ImagePath', backref='listings')
 
     @classmethod
     def register(cls, title, description, address, daily_price, user_id):
@@ -174,6 +174,38 @@ class ImagePath(db.Model):
         return imagepath
 
 
+class Message(db.Model):
+    __tablename__ = "messages"
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    sender_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False,
+    )
+
+    recipient_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False,
+    )
+
+    content = db.Column(
+        db.Text,
+        nullable=False,
+    )
+
+    sender = db.relationship('User', foreign_keys=[
+                             sender_id], backref='sent_messages')
+    recipient = db.relationship(
+        'User', foreign_keys=[recipient_id], backref='received_messages')
+
+
 class Reservation(db.Model):
     __tablename__ = "reservations"
 
@@ -182,7 +214,6 @@ class Reservation(db.Model):
         primary_key=True,
         autoincrement=True,
     )
-
 
     user_id = db.Column(
         db.Integer,
@@ -214,8 +245,8 @@ class Reservation(db.Model):
     listing = db.relationship('Listing', backref="reservations")
 
     @classmethod
-    def create(cls, user_id, listing_id, start_date, end_date, total_cost):
-        """Creates a Path."""
+    def book(cls, user_id, listing_id, start_date, end_date, total_cost):
+        """Creates a Reservation."""
 
         reservation = Reservation(
             user_id=user_id,
@@ -225,11 +256,7 @@ class Reservation(db.Model):
             total_cost=total_cost
         )
 
-        db.session.add(reservation)
         return reservation
-
-
-
 
 
 def connect_db(app):

@@ -4,7 +4,7 @@ import os
 from PIL import Image
 from io import BytesIO
 from dotenv import load_dotenv
-from forms import AddListingForm, CSRFProtection, UserAddForm, LoginForm, UserUpdateForm, EditListingForm, ReserveListingForm
+from forms import AddListingForm, CSRFProtection, UserAddForm, LoginForm, UserUpdateForm, EditListingForm, ReserveListingForm, MessageForm
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import or_
 from datetime import date, datetime
@@ -18,7 +18,7 @@ from flask import Flask, render_template, flash, redirect, session, g, jsonify, 
 # from sqlalchemy import or_
 
 
-from models import connect_db, User, db, Listing, ImagePath
+from models import connect_db, User, db, Listing, ImagePath, Reservation
 load_dotenv()
 
 CURR_USER_KEY = "curr_user"
@@ -248,6 +248,33 @@ def edit_user(user_id):
     return render_template("users/edit.html", form=form, user_id=user.id, url=BUCKET_BASE_URL)
 
 
+@app.route('/users/<int:user_id>/message', methods=["GET", "POST"])
+def message_user(user_id):
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    form = MessageForm
+
+    if form.validate_on_submit():
+        sender_id = g.user.id
+        recipient_id = user_id
+        content = form.content.data
+
+        message = Message(
+            sender_id=sender_id,
+            recipient_id=recipient_id,
+            content=content,
+        )
+
+        db.session.add(message)
+        db.session.commit()
+
+        flash("Message sent.", "success")
+        return redirect(f'/users/{user_id}')
+
+
 @app.post("/users/delete")
 def delete_user():
     """Delete a user"""
@@ -426,7 +453,18 @@ def delete_listing(listing_id):
 
     #     return render_template('add-listing.html', form=form)
 
-@ app.route('/reservations/<int:listing_id>',  methods=["GET", "POST"])
+
+def availablity(listing_id, start_date, end_date):
+
+    reservations = Reservation.query.filter_by(listing_id=listing_id).all()
+
+    for reservation in reservations:
+        if ((start_date < reservation.start_date and reservation.start_date < end_date) or (start_date < reservation.end_date and reservation.end_date < end_date) or (start_date > reservation.start_date and end_date < reservation.end_date)):
+            return False
+    return True
+
+
+@ app.route('/reservations/<int:listing_id>', methods=["GET", "POST"])
 def book_listing(listing_id):
     """Show a listing"""
 
@@ -436,34 +474,35 @@ def book_listing(listing_id):
 
     listing = Listing.query.get_or_404(listing_id)
 
-    # daily_price = listing.daily_price
-
     form = ReserveListingForm()
     if form.validate_on_submit():
         try:
-            start_date = form.start_date.data,
+            start_date = form.start_date.data
             end_date = form.end_date.data
+            if ((end_date - start_date).days <= 0 or not availablity(listing_id, start_date, end_date)):
+                flash("Invalid Request.", "danger")
+                return render_template("listings/book-reservation.html", listing=listing, url=BUCKET_BASE_URL, form=form)
 
-            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d')
-            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d')
+            total_cost = listing.daily_price * (end_date - start_date).days
 
-
-            print (end_date_obj-start_date_obj, 'ENDDATEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEe')
-
+            reservation = Reservation.book(
+                user_id=g.user.id,
+                listing_id=listing_id,
+                start_date=start_date,
+                end_date=end_date,
+                total_cost=total_cost
+            )
+            db.session.add(reservation)
             db.session.commit()
 
-
-            flash("Listing Updated.", "success")
+            flash("Reservation Made.", "success")
             return redirect(f'/listings/{listing.id}')
 
         except IntegrityError:
-            return render_template("listings/book-reservation.html", listing=listing, url=BUCKET_BASE_URL, form = form)
+            flash("A problem occured.", "danger")
+            return render_template("listings/book-reservation.html", listing=listing, url=BUCKET_BASE_URL, form=form)
 
-
-
-
-    return render_template("listings/book-reservation.html", listing=listing, url=BUCKET_BASE_URL, form = form)
-
+    return render_template("listings/book-reservation.html", listing=listing, url=BUCKET_BASE_URL, form=form)
 
 
 @ app.get('/get-photo')

@@ -1,6 +1,6 @@
 """Forms for ShareB&B."""
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, FileField, IntegerField, DateField
+from wtforms import StringField, PasswordField, FileField, IntegerField, DateField, TextAreaField
 from wtforms.validators import InputRequired, Email, Length, URL, Optional
 
 
@@ -114,6 +114,11 @@ class ReserveListingForm(FlaskForm):
         'End Date',
         validators=[InputRequired()],
     )
+
+
+class MessageForm(FlaskForm):
+    '''Form for sending a message'''
+    content = TextAreaField('text', validators=[InputRequired()])
 
 
 class CSRFForm (FlaskForm):
