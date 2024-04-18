@@ -78,28 +78,28 @@ class AddListingForm(FlaskForm):
 
 
 class EditListingForm(FlaskForm):
-        """Edit listing form."""
+    """Edit listing form."""
 
-        title = StringField(
-            'Title',
-            validators=[InputRequired(), Length(max=30)],
-        )
-        description = StringField(
-            'Description',
-            validators=[InputRequired(), Length(max=1000)],
-        )
+    title = StringField(
+        'Title',
+        validators=[InputRequired(), Length(max=30)],
+    )
+    description = StringField(
+        'Description',
+        validators=[InputRequired(), Length(max=1000)],
+    )
 
-        address = StringField(
-            'Address',
-            validators=[InputRequired(), Length(max=75)],
-        )
+    address = StringField(
+        'Address',
+        validators=[InputRequired(), Length(max=75)],
+    )
 
-        daily_price = IntegerField(
-            'Daily Price',
-            validators=[InputRequired()],
-        )
+    daily_price = IntegerField(
+        'Daily Price',
+        validators=[InputRequired()],
+    )
 
-        image = FileField('text', validators=[InputRequired()])
+    image = FileField('text')
 
 
 class CSRFForm (FlaskForm):

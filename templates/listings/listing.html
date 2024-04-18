@@ -13,6 +13,7 @@
           <div class="card-contents">
             <p>{{ listing.title }}</p>
             <p>{{ listing.description }}</p>
+            <p>{{ listing.address }}</p>
 
             {% for image in listing.images %}
             <img src="{{url}}{{image.path}}" alt="">

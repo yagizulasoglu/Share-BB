@@ -6,12 +6,20 @@
   <div class="card-contents">
     <p>{{ listing.title }}</p>
     <p>{{ listing.description }}</p>
+    <p>{{ listing.address }}</p>
 
 
     {% for image in listing.images %}
     <img src="{{url}}{{image.path}}" alt="">
     {% endfor %}
-
+    {% if g.user.id == listing.user.id %}
+    <form action="/listings/{{listing.id}}/edit">
+      <button type="submit">Edit</button>
+    </form>
+    <form action="/listings/{{listing.id}}/delete" method="POST">
+      <button type="submit">Delete</button>
+    </form>
+    {% endif %}
     <a href="/users/{{listing.user.id}}">{{listing.user.username}}</a>
   </div>
 </div>

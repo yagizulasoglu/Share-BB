@@ -6,6 +6,7 @@ from io import BytesIO
 from dotenv import load_dotenv
 from forms import AddListingForm, CSRFProtection, UserAddForm, LoginForm, UserUpdateForm, EditListingForm
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import or_
 
 import boto3
 
@@ -22,7 +23,7 @@ load_dotenv()
 CURR_USER_KEY = "curr_user"
 BUCKET = os.environ.get('BUCKET')
 
-BUCKET_BASE_URL = f'https://{BUCKET}.s3.us-east-2.amazonaws.com/'
+BUCKET_BASE_URL = f'https://{BUCKET}.s3.amazonaws.com/'
 print(BUCKET_BASE_URL)
 
 app = Flask(__name__)
@@ -64,7 +65,6 @@ def add_pp_to_bucket(content, image, user_id):
     s3.put_object(Bucket=os.environ.get('BUCKET'),
                   Key=path, Body=content)
     return path
-
 
 
 ##############################################################################
@@ -134,7 +134,6 @@ def signup():
 
             user.image_path = path
             db.session.commit()
-
 
         except IntegrityError:
             flash("Username already taken", 'danger')
@@ -208,7 +207,7 @@ def list_users():
 
     users = User.query.all()
 
-    return render_template("users/users.html", users=users, url = BUCKET_BASE_URL)
+    return render_template("users/users.html", users=users, url=BUCKET_BASE_URL)
 
 
 @app.get('/users/<int:user_id>')
@@ -221,7 +220,7 @@ def show_user(user_id):
 
     user = User.query.get_or_404(user_id)
 
-    return render_template("users/profile.html", user=user, url= BUCKET_BASE_URL)
+    return render_template("users/profile.html", user=user, url=BUCKET_BASE_URL)
 
 
 @app.route('/users/<int:user_id>/edit', methods=["GET", "POST"])
@@ -245,7 +244,7 @@ def edit_user(user_id):
         except IntegrityError:
             flash("Try Again", "danger")
 
-    return render_template("users/edit.html", form=form, user_id=user.id, url = BUCKET_BASE_URL)
+    return render_template("users/edit.html", form=form, user_id=user.id, url=BUCKET_BASE_URL)
 
 
 @app.post("/users/delete")
@@ -266,6 +265,9 @@ def delete_user():
     flash("User deleted.", "success")
     return redirect("/signup")
 
+##############################################################################
+# Listing routes:
+
 
 @app.get('/listings')
 def list_listings():
@@ -274,12 +276,25 @@ def list_listings():
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    listings = Listing.query.all()
+    search = request.args.get('q')
 
-    return render_template("listings/listing.html", listings=listings, url = BUCKET_BASE_URL)
+    if not search:
+        listings = Listing.query.all()
+
+    else:
+        # listings = Listing.query.filter(
+        #     Listing.title.ilike(f"%{search}%")).all()
+
+        listings = Listing.query.filter(or_(
+            Listing.title.ilike(f"%{search}%"),
+            Listing.description.ilike(f"%{search}%"),
+            Listing.address.ilike(f"%{search}%")
+        )).all()
+
+    return render_template("listings/listing.html", listings=listings, url=BUCKET_BASE_URL)
 
 
-@app.route('/add-listing', methods=["GET", "POST"])
+@ app.route('/add-listing', methods=["GET", "POST"])
 def add_listing():
     """Handle user signup.
 
@@ -326,7 +341,7 @@ def add_listing():
         return render_template('listings/add-listing.html', form=form)
 
 
-@app.get('/listings/<int:listing_id>')
+@ app.get('/listings/<int:listing_id>')
 def show_listing(listing_id):
     """Show a listing"""
 
@@ -336,27 +351,25 @@ def show_listing(listing_id):
 
     listing = Listing.query.get_or_404(listing_id)
 
-    return render_template("listings/info.html", listing=listing, url = BUCKET_BASE_URL)
+    return render_template("listings/info.html", listing=listing, url=BUCKET_BASE_URL)
 
 
-
-@app.route('/listings/<int:listing_id>/edit', methods=["GET", "POST"])
+@ app.route('/listings/<int:listing_id>/edit', methods=["GET", "POST"])
 def edit_listing(listing_id):
     """Edit user profile"""
     listing = Listing.query.get_or_404(listing_id)
 
-    if not g.user or g.user.id != listing.user_id :
+    if not g.user or g.user.id != listing.user_id:
         flash("Access unauthorized.", "danger")
         return redirect("/")
-
 
     form = EditListingForm(obj=listing)
     if form.validate_on_submit():
         try:
-            listing.title=form.title.data,
-            listing.description=form.description.data,
-            listing.address=form.address.data,
-            listing.daily_price=form.daily_price.data,
+            listing.title = form.title.data,
+            listing.description = form.description.data,
+            listing.address = form.address.data,
+            listing.daily_price = form.daily_price.data,
 
             db.session.commit()
 
@@ -373,30 +386,47 @@ def edit_listing(listing_id):
         except IntegrityError:
             return render_template('listings/edit-listing.html', form=form)
 
-
     return render_template("listings/edit-listing.html", form=form)
 
 
-# @app.route('/add-listing', methods=['GET', 'POST'])
-# def add_listing():
+@ app.post("/listings/<int:listing_id>/delete")
+def delete_listing(listing_id):
+    """Delete a listing"""
 
-#     form = AddAListingForm()
+    form = g.csrf_form
+    listing = Listing.query.get_or_404(listing_id)
 
-#     if form.validate_on_submit():
-#         filename = form.Image.data.filename
-#         image_file = request.files['Image']
-#         image_content = image_file.read()
-#         add_image_to_bucket(image_content, filename, 'pear')
+    if not form.validate_on_submit() or not g.user.id == listing.user_id:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
 
-#     else:
-#         return render_template('add-listing.html', form=form)
+    ImagePath.query.filter_by(listing_id=listing_id).delete()
+    db.session.delete(listing)
+    db.session.commit()
 
-#     print(form.Image.data, "#############################")
+    flash("Listing deleted.", "success")
+    return redirect("/listings")
 
-#     return render_template('add-listing.html', form=form)
+    # @app.route('/add-listing', methods=['GET', 'POST'])
+    # def add_listing():
+
+    #     form = AddAListingForm()
+
+    #     if form.validate_on_submit():
+    #         filename = form.Image.data.filename
+    #         image_file = request.files['Image']
+    #         image_content = image_file.read()
+    #         add_image_to_bucket(image_content, filename, 'pear')
+
+    #     else:
+    #         return render_template('add-listing.html', form=form)
+
+    #     print(form.Image.data, "#############################")
+
+    #     return render_template('add-listing.html', form=form)
 
 
-@app.get('/get-photo')
+@ app.get('/get-photo')
 def get_photo():
 
     # s3 = boto3.client(
@@ -414,7 +444,7 @@ def get_photo():
     return render_template('get-photo.html', image_src=image_src,)
 
 
-@app.errorhandler(404)
+@ app.errorhandler(404)
 def page_not_found(e):
     """404 NOT FOUND page."""
 

@@ -129,7 +129,7 @@ class Listing(db.Model):
 
     user = db.relationship('User', backref="listings")
 
-    images = db.relationship('ImagePath', backref='listings')
+    images = db.relationship('ImagePath', backref='listings',)
 
     @classmethod
     def register(cls, title, description, address, daily_price, user_id):
