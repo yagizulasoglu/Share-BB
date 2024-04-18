@@ -7,41 +7,40 @@
   <div class="container" style="max-width: 1300px;">
     <div class="row justify-content-end">
       <div class="col-9">
+        
+          <div class="row">
+            <div class="col-sm-3">
+              <h4 id="sidebar-username">@{{ user.username }}</h4>
+              {% if user.listings %}
+              <h6>Listings</h6>
+              {% for listing in user.listings %}
+              <a href="/listings/{{listing.id}}">{{listing.title}}</a>
+              {% endfor %}
+              {% endif %}
+              {% if g.user.id != user.id %}
+              <a href="/users/{{user.id}}/message">Message {{user.username}}.</a>
+              {% endif %}
+              <button>Message!</button>
+              {% if g.user.id == user.id %}
+              <h4>My Reservations</h4>
+              {% for reservation in user.reservations %}
+              <a href="/listings/{{reservation.listing_id}}">
+                <p>{{reservation.start_date}}</p>
+                <p>{{reservation.end_date}}</p>
+              </a>
+              {% endfor %}
+              <form action="/users/delete" method="POST">
+                <button type="submit">Delete</button>
+              </form>
+              {% endif %}
+            </div>
 
+            {% block user_details %}
+            {% endblock %}
+        </div>
       </div>
     </div>
   </div>
-</div>
-
-<div class="row">
-  <div class="col-sm-3">
-    <h4 id="sidebar-username">@{{ user.username }}</h4>
-    {% if user.listings %}
-    <h6>Listings</h6>
-    {% for listing in user.listings %}
-    <a href="/listings/{{listing.id}}">{{listing.title}}</a>
-    {% endfor %}
-    {% endif %}
-    {% if g.user.id != user.id %}
-    <a href="/users/{{user.id}}/message">Message {{user.username}}.</a>
-    {% endif %}
-    <button>Message!</button>
-    {% if g.user.id == user.id %}
-    <h4>My Reservations</h4>
-    {% for reservation in user.reservations %}
-    <a href="/listings/{{reservation.listing_id}}">
-      <p>{{reservation.start_date}}</p>
-      <p>{{reservation.end_date}}</p>
-    </a>
-    {% endfor %}
-    <form action="/users/delete" method="POST">
-      <button type="submit">Delete</button>
-    </form>
-    {% endif %}
-  </div>
-
-  {% block user_details %}
-  {% endblock %}
 </div>
 
 {% endblock %}

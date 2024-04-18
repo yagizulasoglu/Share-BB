@@ -68,6 +68,9 @@ def add_pp_to_bucket(content, image, user_id):
     return path
 
 
+
+
+
 ##############################################################################
 # User signup/login/logout
 
@@ -101,6 +104,12 @@ def do_logout():
 
     if CURR_USER_KEY in session:
         del session[CURR_USER_KEY]
+
+
+@app.get('/')
+def homepage():
+
+    return render_template('home.html', url =BUCKET_BASE_URL)
 
 
 @app.route('/signup', methods=["GET", "POST"])
@@ -190,9 +199,6 @@ def logout():
     return redirect("/login")
 
 
-@app.get('/')
-def homepage():
-    return render_template("base.html")
 
 ##############################################################################
 # User routes:
@@ -502,7 +508,7 @@ def book_listing(listing_id):
 
     form = ReserveListingForm()
     if form.validate_on_submit():
-        try:
+        # try:
             start_date = form.start_date.data
             end_date = form.end_date.data
             if ((end_date - start_date).days <= 0 or not availablity(listing_id, start_date, end_date)):
@@ -526,19 +532,19 @@ def book_listing(listing_id):
             # flash("Reservation Made.", "success")
             # return render_template("listings/confirmation.html", form=form1)
 
-        except IntegrityError:
-            flash("A problem occured.", "danger")
-            return render_template("listings/book-reservation.html", listing=listing, url=BUCKET_BASE_URL, form=form)
+        # except IntegrityError:
+        #     flash("A problem occured.", "danger")
+            return render_template("listings/confirmation.html", listing=listing, url=BUCKET_BASE_URL, form=form1)
 
-    return render_template("listings/book-reservation.html", listing_id=listing_id, url=BUCKET_BASE_URL, form=form)
+    return render_template("listings/book-reservation.html", listing=listing, url=BUCKET_BASE_URL, form=form)
 
 
 @ app.post('/reservations/confirmation/<int:listing_id>')
 def confirm_booking(listing_id):
     """Confirm booking"""
 
-    start_date = datetime.strptime(request.form.get('start_date'), '%y/%m/%d')
-    end_date = datetime.strptime(request.form.get('end_date'), '%y/%m/%d')
+    start_date = datetime.strptime(request.form.get('start_date'), '%Y-%m-%d')
+    end_date = datetime.strptime(request.form.get('end_date'), '%Y-%m-%d')
 
     listing = Listing.query.get_or_404(listing_id)
     total_cost = listing.daily_price * (end_date - start_date).days
@@ -553,24 +559,25 @@ def confirm_booking(listing_id):
 
     db.session.add(reservation)
     db.session.commit()
-    redirect(f"/listings/{listing_id}")
+    flash("Reservation Confirmed.", "success")
+    return redirect(f"/listings/{listing_id}")
 
-    @ app.get('/get-photo')
-    def get_photo():
+    # @ app.get('/get-photo')
+    # def get_photo():
 
-        # s3 = boto3.client(
-        #     "s3",
-        #     "us-east-1",
-        #     aws_access_key_id=os.environ.get('ACCESS_KEY'),
-        #     aws_secret_access_key=os.environ.get('AWS_SECRET_KEY'),
-        # )
+    #     # s3 = boto3.client(
+    #     #     "s3",
+    #     #     "us-east-1",
+    #     #     aws_access_key_id=os.environ.get('ACCESS_KEY'),
+    #     #     aws_secret_access_key=os.environ.get('AWS_SECRET_KEY'),
+    #     # )
 
-        image_src = "https://sharebandb1234.s3.amazonaws.com/test123.jpeg"
-        # breakpoint()
-        # image_data = image['Body'].read()
-        # image = Image.open(BytesIO(image_data))
+    #     image_src = "https://sharebandb1234.s3.amazonaws.com/test123.jpeg"
+    #     # breakpoint()
+    #     # image_data = image['Body'].read()
+    #     # image = Image.open(BytesIO(image_data))
 
-        return render_template('get-photo.html', image_src=image_src,)
+    #     return render_template('get-photo.html', image_src=image_src,)
 
 
 @ app.errorhandler(404)
