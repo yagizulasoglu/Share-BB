@@ -229,8 +229,7 @@ def show_user(user_id):
 @app.route('/users/<int:user_id>/edit', methods=["GET", "POST"])
 def edit_user(user_id):
     """Edit user profile"""
-
-    if not g.user or not g.user.id != user_id:
+    if not g.user or g.user.id != user_id:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 

@@ -19,25 +19,27 @@
   <nav class="navbar navbar-expand">
     <div class="container-fluid">
 
-      <div class="navbar-header">
+      <div class="navbar-header" class="w-50 rounded-circle">
         <a href="/" class="navbar-brand">
-          <img src="https://sharebandb1234.s3.amazonaws.com/images.jpg" alt="logo">
+          <img src="https://sharebandb1234.s3.amazonaws.com/images.jpg" style="width: 90px;" alt="logo">
           <span>Share B&B</span>
         </a>
       </div>
 
       <ul class="nav navbar-nav navbar-right">
         {% if g.user %}
-        <button><a href="/users/{{g.user.id}}">Profile</a></button>
-        <form class="navbar-form navbar-end" action="/listings">
+        <button class="btn btn-primary"><a class="text-white text-decoration-none"
+            href="/users/{{g.user.id}}">Profile</a></button>
+        <form class="navbar-form navbar-end" action="/listings" style="height: 50px; padding: 5px;">
           <input name="q" class="form-control" placeholder="Search BB" aria-label="Search" id="search">
-          <button class="btn btn-default">
-            <span class="bi bi-search"></span>
-          </button>
+          <!-- <button class="btn btn-default"> -->
+          <!-- <span class="bi bi-search"></span> -->
+          <!-- </button> -->
         </form>
-        <button><a href="/users/{{g.user.id}}/inbox">Inbox</a></button>
-        <form action="/logout" method="POST">
-          <button type="submit">Logout</button>
+        <button class="btn btn-primary px-3"><a class="text-white text-decoration-none"
+            href="/users/{{g.user.id}}/inbox">Inbox</a></button>
+        <form action="/logout" method="POST" style="padding: 5px;">
+          <button type="submit" class="btn btn-primary">Logout</button>
         </form>
 
         {% endif %}

@@ -16,7 +16,7 @@
     </div> -->
         <a href="/users/{{ g.user.id }}" class="card-link w-50">
           <img src="{{ url }}{{g.user.image_path}}" alt="Image for {{ g.user.username }}"
-            class="card-image w-75 rounded-cirlce">
+            class="card-image w-30 rounded-circle">
           <p>@{{ g.user.username }}</p>
         </a>
         <ul class="user-stats nav nav-pills">
@@ -71,7 +71,7 @@
 </div>
 {% else %}
 <div class="home-hero">
-  <h1>What's Happening?</h1>
+  <h1>Need a Vacation?</h1>
   <h4>New to Share B and B?</h4>
   <p>Sign up now to get your own listings!</p>
   <a href="/signup" class="btn btn-primary">Sign up</a>

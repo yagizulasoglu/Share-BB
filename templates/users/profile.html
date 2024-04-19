@@ -2,13 +2,28 @@
 
 {% block content %}
 
-<img src="{{ url }}{{user.image_path}}" alt="Image for {{ user.username }}" id="profile-avatar">
+<!-- <img src="{{ url }}{{user.image_path}}" alt="Image for {{ user.username }}" id="profile-avatar">
 <div class="row full-width">
   <div class="container" style="max-width: 1300px;">
     <div class="row justify-content-end">
-      <div class="col-9">
+      <div class="col-9"> -->
 
-        <div class="row">
+<div class="col-12">
+  <div class="card-contents">
+    <div class="listing-info m-2 text">
+      <img src="{{url}}{{user.image_path}}" alt="">
+      <h3>{{ user.username }}</h3>
+      <div class="despription">
+        {% if user.listings %}
+        <h6>Listings</h6>
+        {% for listing in user.listings %}
+        <a href="/listings/{{listing.id}}">{{listing.title}}</a>
+        {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- <div class="row">
           <div class="col-sm-3">
             <h4 id="sidebar-username">@{{ user.username }}</h4>
             {% if user.listings %}
@@ -16,31 +31,35 @@
             {% for listing in user.listings %}
             <a href="/listings/{{listing.id}}">{{listing.title}}</a>
             {% endfor %}
-            {% endif %}
-            {% if g.user.id != user.id %}
-            <button><a href="/users/{{user.id}}/message">Message {{user.username}}.</a></button>
-            {% endif %}
-            {% if g.user.id == user.id %}
-            <h4>My Reservations</h4>
-            {% for reservation in user.reservations %}
-            <a href="/listings/{{reservation.listing_id}}">
-              <h6>{{reservation.listing.title}}</h6>
-            </a>
-            <p>{{reservation.start_date}}</p>
-            <p>{{reservation.end_date}}</p>
-            {% endfor %}
-            <form action="/users/delete" method="POST">
-              <button type="submit">Delete</button>
-            </form>
-            {% endif %}
-          </div>
+            {% endif %} -->
+    {% if g.user.id != user.id %}
+    <a href="/users/{{user.id}}/message"><button class="btn btn-primary">Message {{user.username}}.</button></a>
+    {% endif %}
+    {% if g.user.id == user.id %}
+    <h4>My Reservations</h4>
+    {% for reservation in user.reservations %}
+    <a href="/listings/{{reservation.listing_id}}">
+      <h6>{{reservation.listing.title}}</h6>
+    </a>
+    <p>Check-in Date: {{reservation.start_date}}</p>
+    <p>Check-out Date: {{reservation.end_date}}</p>
+    {% endfor %}
 
-          {% block user_details %}
-          {% endblock %}
-        </div>
-      </div>
-    </div>
+    <a href="/add-listing"><button class="btn btn-primary">Add a Listing</button></a>
+    <a href="/users/{{g.user.id}}/edit"><button class="btn btn-primary">Edit</button></a>
+
+    <form action="/users/delete" method="POST">
+      <button class="btn btn-danger" type="submit">Delete</button>
+    </form>
+    {% endif %}
   </div>
+
+  {% block user_details %}
+  {% endblock %}
+</div>
+</div>
+</div>
+</div>
 </div>
 
 {% endblock %}
