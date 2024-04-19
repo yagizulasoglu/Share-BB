@@ -21,10 +21,10 @@
     {% if g.user.id == listing.user.id %}
 
     <form action="/listings/{{listing.id}}/edit">
-      <button type="submit">Edit</button>
+      <button class="btn btn-primary" type="submit">Edit</button>
     </form>
     <form action="/listings/{{listing.id}}/delete" method="POST">
-      <button type="submit">Delete</button>
+      <button class="btn btn-danger" type="submit">Delete</button>
     </form>
     {% else %}
     <div class="listing-buttons d-block">

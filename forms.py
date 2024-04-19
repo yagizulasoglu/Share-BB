@@ -1,6 +1,6 @@
 """Forms for ShareB&B."""
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, FileField, IntegerField, DateField, TextAreaField
+from wtforms import StringField, PasswordField, FileField, IntegerField, DateField, TextAreaField, MultipleFileField
 from wtforms.validators import InputRequired, Email, Length
 
 
@@ -35,7 +35,7 @@ class UserUpdateForm(FlaskForm):
         'E-mail',
         validators=[InputRequired(), Email(), Length(max=50)],
     )
-    image_url = FileField('text', validators=[InputRequired()])
+    image = FileField('text')
 
 
 class LoginForm(FlaskForm):
@@ -53,7 +53,7 @@ class LoginForm(FlaskForm):
 
 
 class AddListingForm(FlaskForm):
-    """Login form."""
+    """Add a listing form."""
 
     title = StringField(
         'Title',
@@ -74,7 +74,10 @@ class AddListingForm(FlaskForm):
         validators=[InputRequired()],
     )
 
-    image = FileField('text', validators=[InputRequired()])
+    image = MultipleFileField(
+        render_kw={'multiple': True},
+        validators=[InputRequired()],
+        )
 
 
 class EditListingForm(FlaskForm):
@@ -99,11 +102,14 @@ class EditListingForm(FlaskForm):
         validators=[InputRequired()],
     )
 
-    image = FileField('text')
+    image = MultipleFileField(
+        render_kw={'multiple': True},
+        validators=[InputRequired()],
+        )
 
 
 class ReserveListingForm(FlaskForm):
-    """Edit listing form."""
+    """Reserve a listing form."""
 
     start_date = DateField(
         'Start Date',
@@ -117,7 +123,7 @@ class ReserveListingForm(FlaskForm):
 
 
 class ConfirmForm(FlaskForm):
-    """Edit listing form."""
+    """Confirm a reservation form."""
 
     start_date = DateField(
         'Start Date',
@@ -132,14 +138,14 @@ class ConfirmForm(FlaskForm):
     )
 
     total_cost = IntegerField(
-        'Total Cost',
+        'Total Cost ($)',
         validators=[InputRequired()],
         render_kw={'readonly': True},
     )
 
 
 class MessageForm(FlaskForm):
-    '''Form for sending a message'''
+    """Form for sending a message"""
     content = TextAreaField('text', validators=[InputRequired()])
 
 

@@ -11,13 +11,18 @@
       {% for msg in messages %}
       {% if msg.sender_id == g.user.id %}
       <li>
-        <p>You: {{msg.content}}<a href="/users/{{msg.recipient.id}}/message"> to {{msg.recipient.username}}</a></p>
+        <p>You: {{msg.content}}<a href="/users/{{msg.recipient.id}}/message" style="text-decoration: none;"> to {{msg.recipient.username}}</a></p>
       </li>
       {% else %}
+      {% if msg.is_read %}
       <li>
-        <p><a href="/users/{{msg.sender.id}}/message">{{msg.sender.username}}</a> from {{msg.content}}</p>
-        <a href="/users/{{msg.sender.id}}/message">{{msg.sender.username}}</a>
+        <p><a href="/users/{{msg.sender.id}}/message" style="text-decoration: none;">{{msg.sender.username}}:</a> {{msg.content}}</p>
       </li>
+      {% else %}
+      <li style="color: blue;">
+        <p><a href="/users/{{msg.sender.id}}/message" style="text-decoration: none;">{{msg.sender.username}}:</a> {{msg.content}}</p>
+      </li>
+      {% endif %}
       {% endif %}
       {% endfor %}
     </ul>

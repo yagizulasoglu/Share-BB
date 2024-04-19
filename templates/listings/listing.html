@@ -10,16 +10,17 @@
       {% for listing in listings %}
       <a href="/listings/{{listing.id}}" class="text-decoration-none">
         <div class="listing-card border rounded p-2 m-2 text-center">
-          {% for image in listing.images %}
-          <img src="{{url}}{{image.path}}" alt="">
-          {% endfor %}
+          {% if listing.images|length > 0 %}
+          <img src="{{url}}{{listing.images[0].path}}" alt="">
+          {% endif %}
           <div class="col-12">
             <div class="card-contents">
               <p class="text-dark">{{ listing.title }}</p>
               <p class="text-dark">{{ listing.address }}</p>
-
+              {% if listing.user_id != g.user.id %}
               <button class="btn btn-primary"><a href="/reservations/{{listing.id}}" class="text-white text-decoration-none">Book
                 </a></button>
+              {% endif %}
             </div>
           </div>
         </div>

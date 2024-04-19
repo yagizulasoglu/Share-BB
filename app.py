@@ -1,18 +1,18 @@
 """Flask App for Flask Cafe."""
 
 import os
-from PIL import Image
-from io import BytesIO
+# from PIL import Image
+# from io import BytesIO
 from dotenv import load_dotenv
 from forms import AddListingForm, CSRFProtection, UserAddForm, LoginForm, UserUpdateForm, EditListingForm, ReserveListingForm, MessageForm, ConfirmForm
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import or_, and_
-from datetime import date, datetime
+from datetime import datetime
 
 import boto3
 
 
-from flask import Flask, render_template, flash, redirect, session, g, jsonify, request
+from flask import Flask, render_template, flash, redirect, session, g, request
 # # from flask_debugtoolbar import DebugToolbarExtension
 # from sqlalchemy.exc import IntegrityError
 # from sqlalchemy import or_
@@ -105,6 +105,7 @@ def do_logout():
 
 @app.get('/')
 def homepage():
+    """Render the homepage"""
 
     return render_template('home.html', url=BUCKET_BASE_URL)
 
@@ -114,6 +115,8 @@ def signup():
     """Handle user signup.
 
     Create new user and add to DB. Redirect to home page.
+
+    Adds profile photo to the AWS S3.
 
     If form not valid, present form.
 
@@ -237,12 +240,18 @@ def edit_user(user_id):
     form = UserUpdateForm(obj=user)
 
     if form.validate_on_submit():
-        user.email = form.email.data
-        user.image_url = form.image_url.data
-
         try:
+            user.email = form.email.data
+            if(form.image.data):
+                image_file = request.files["image"]
+                image_content = image_file.read()
+                path = add_pp_to_bucket(
+                        image_content, form.image.data.filename, user.id)
+                user.image_path = path
+
             db.session.commit()
             return redirect(f"/users/{user.id}")
+
         except IntegrityError:
             flash("Try Again", "danger")
 
@@ -251,7 +260,7 @@ def edit_user(user_id):
 
 @app.get('/users/<int:user_id>/inbox')
 def user_inbox(user_id):
-
+    """Show all messages of the current user"""
     if not g.user or not user_id == g.user.id:
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -267,17 +276,13 @@ def user_inbox(user_id):
 
 @app.route('/users/<int:user_id>/message', methods=["GET", "POST"])
 def message_user(user_id):
+    """Show messages between the two users and form to send a new message."""
 
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
     form = MessageForm()
-
-    # messages = Message.query.filter(and_(
-    #         Message.sender_id == (g.user.id),
-    #         Message.recipient_id ==(user_id),
-    #     )).all()
 
     messages = Message.query.filter(
         or_(
@@ -292,11 +297,11 @@ def message_user(user_id):
         )
     ).all()
 
+    for message in messages:
+        if g.user.id == message.recipient_id:
+            message.is_read = True
+
     username = (User.query.get_or_404(user_id)).username
-
-    # messages1 = Message.query.filter(and_(Message.sender_id.like({g.user.id}),Message.recipient_id.like({user_id})).all())
-
-    # messages2 = Message.query.filter(and_(Message.sender.like({user_id}),Message.recipient.like({g.user.id})).all())
 
     if form.validate_on_submit():
         sender_id = g.user.id
@@ -342,6 +347,7 @@ def delete_user():
 
 @app.get('/listings')
 def list_listings():
+    """Show all the listings. Filter them if user searches for something."""
 
     if not g.user:
         flash("Access unauthorized.", "danger")
@@ -353,8 +359,6 @@ def list_listings():
         listings = Listing.query.all()
 
     else:
-        # listings = Listing.query.filter(
-        #     Listing.title.ilike(f"%{search}%")).all()
 
         listings = Listing.query.filter(or_(
             Listing.title.ilike(f"%{search}%"),
@@ -367,14 +371,13 @@ def list_listings():
 
 @ app.route('/add-listing', methods=["GET", "POST"])
 def add_listing():
-    """Handle user signup.
+    """Handle adding a listing.
 
-    Create new user and add to DB. Redirect to home page.
+    Create new listing and add to DB. Redirect to home page.
+
+    Add photos to AWS S3
 
     If form not valid, present form.
-
-    If the there already is a user with that username: flash message
-    and re-present form.
     """
 
     form = AddListingForm()
@@ -394,14 +397,13 @@ def add_listing():
                 user_id=g.user.id
             )
             db.session.commit()
-
-            image_file = request.files['image']
-            image_content = image_file.read()
-            path = add_image_to_bucket(
-                image_content, form.image.data.filename, listing.id)
-            new_path = ImagePath.create(path, listing.id)
-            db.session.add(new_path)
-            db.session.commit()
+            for image in form.image.data:
+                image_content = image.read()
+                path = add_image_to_bucket(
+                    image_content, image.filename, listing.id)
+                new_path = ImagePath.create(path, listing.id)
+                db.session.add(new_path)
+                db.session.commit()
 
         except IntegrityError:
             return render_template('listings/add-listing.html', form=form)
@@ -421,13 +423,13 @@ def show_listing(listing_id):
         return redirect("/")
 
     listing = Listing.query.get_or_404(listing_id)
-
+    print(listing.images, "$$$$$$$$$$$$$$$$$$$$$$$$$$$")
     return render_template("listings/info.html", listing=listing, url=BUCKET_BASE_URL)
 
 
 @ app.route('/listings/<int:listing_id>/edit', methods=["GET", "POST"])
 def edit_listing(listing_id):
-    """Edit user profile"""
+    """Edit a listing"""
     listing = Listing.query.get_or_404(listing_id)
 
     if not g.user or g.user.id != listing.user_id:
@@ -478,27 +480,12 @@ def delete_listing(listing_id):
     flash("Listing deleted.", "success")
     return redirect("/listings")
 
-    # @app.route('/add-listing', methods=['GET', 'POST'])
-    # def add_listing():
-
-    #     form = AddAListingForm()
-
-    #     if form.validate_on_submit():
-    #         filename = form.Image.data.filename
-    #         image_file = request.files['Image']
-    #         image_content = image_file.read()
-    #         add_image_to_bucket(image_content, filename, 'pear')
-
-    #     else:
-    #         return render_template('add-listing.html', form=form)
-
-    #     print(form.Image.data, "#############################")
-
-    #     return render_template('add-listing.html', form=form)
-
 
 def availablity(listing_id, start_date, end_date):
-
+    """Take listing_id, start_date, end_date.
+    Return true if the listing available in those dates.
+    Return false if not.
+    """
     reservations = Reservation.query.filter_by(listing_id=listing_id).all()
 
     for reservation in reservations:
@@ -509,13 +496,14 @@ def availablity(listing_id, start_date, end_date):
 
 @ app.route('/reservations/<int:listing_id>', methods=["GET", "POST"])
 def book_listing(listing_id):
-    """Show a listing"""
+    """Book a listing"""
 
-    if not g.user:
+    listing = Listing.query.get_or_404(listing_id)
+
+    if not g.user or listing.user_id == g.user.id:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    listing = Listing.query.get_or_404(listing_id)
 
     form = ReserveListingForm()
     if form.validate_on_submit():
@@ -523,7 +511,7 @@ def book_listing(listing_id):
         start_date = form.start_date.data
         end_date = form.end_date.data
         if ((end_date - start_date).days <= 0 or not availablity(listing_id, start_date, end_date)):
-            flash("Invalid Request.", "danger")
+            flash("Please try different days. Property has been booked for some of your dates", "danger")
             return render_template("listings/book-reservation.html", listing=listing, url=BUCKET_BASE_URL, form=form)
 
         total_cost = listing.daily_price * (end_date - start_date).days
@@ -535,16 +523,9 @@ def book_listing(listing_id):
             end_date=end_date,
             total_cost=total_cost
         )
-        # db.session.add(reservation)
-        # db.session.commit()
 
         form1 = ConfirmForm(obj=reservation)
 
-        # flash("Reservation Made.", "success")
-        # return render_template("listings/confirmation.html", form=form1)
-
-        # except IntegrityError:
-        #     flash("A problem occured.", "danger")
         return render_template("listings/confirmation.html", listing=listing, url=BUCKET_BASE_URL, form=form1)
 
     return render_template("listings/book-reservation.html", listing=listing, url=BUCKET_BASE_URL, form=form)
@@ -554,10 +535,15 @@ def book_listing(listing_id):
 def confirm_booking(listing_id):
     """Confirm booking"""
 
+    listing = Listing.query.get_or_404(listing_id)
+
+    if not g.user or listing.user_id == g.user.id:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
     start_date = datetime.strptime(request.form.get('start_date'), '%Y-%m-%d')
     end_date = datetime.strptime(request.form.get('end_date'), '%Y-%m-%d')
 
-    listing = Listing.query.get_or_404(listing_id)
     total_cost = listing.daily_price * (end_date - start_date).days
 
     reservation = Reservation.book(
@@ -570,25 +556,20 @@ def confirm_booking(listing_id):
 
     db.session.add(reservation)
     db.session.commit()
+
+    content = f"{listing.title} has been booked by me. Check-in Time: {start_date} Check-out Time: {end_date}"
+
+    message = Message(
+        sender_id=g.user.id,
+        recipient_id=listing.user_id,
+        content=content,
+    )
+
+    db.session.add(message)
+    db.session.commit()
+
     flash("Reservation Confirmed.", "success")
     return redirect(f"/listings/{listing_id}")
-
-    # @ app.get('/get-photo')
-    # def get_photo():
-
-    #     # s3 = boto3.client(
-    #     #     "s3",
-    #     #     "us-east-1",
-    #     #     aws_access_key_id=os.environ.get('ACCESS_KEY'),
-    #     #     aws_secret_access_key=os.environ.get('AWS_SECRET_KEY'),
-    #     # )
-
-    #     image_src = "https://sharebandb1234.s3.amazonaws.com/test123.jpeg"
-    #     # breakpoint()
-    #     # image_data = image['Body'].read()
-    #     # image = Image.open(BytesIO(image_data))
-
-    #     return render_template('get-photo.html', image_src=image_src,)
 
 
 @ app.errorhandler(404)

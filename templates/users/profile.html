@@ -23,15 +23,6 @@
       </div>
     </div>
 
-    <!-- <div class="row">
-          <div class="col-sm-3">
-            <h4 id="sidebar-username">@{{ user.username }}</h4>
-            {% if user.listings %}
-            <h6>Listings</h6>
-            {% for listing in user.listings %}
-            <a href="/listings/{{listing.id}}">{{listing.title}}</a>
-            {% endfor %}
-            {% endif %} -->
     {% if g.user.id != user.id %}
     <a href="/users/{{user.id}}/message"><button class="btn btn-primary">Message {{user.username}}.</button></a>
     {% endif %}

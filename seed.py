@@ -27,6 +27,7 @@ db.session.add_all([ua, u1])
 db.session.commit()
 
 u1_id = u1.id
+ua_id = ua.id
 
 
 #######################################
@@ -36,36 +37,65 @@ l1 = Listing(
     title="Beautiful House with a Massive Backyard",
     description='Best House in the Town',
     address="3966 24th St",
-    daily_price = 1000000,
-    user_id=u1_id
+    daily_price = 1000,
+    user_id=ua_id
 )
 
 l2 = Listing(
     title='Apartment with a Huge Balcony',
     description='A cozy apartment with a balcony in the downtown.',
     address='440 Grand Ave',
-    daily_price = 5,
+    daily_price = 50,
+    user_id=ua_id
+)
+
+l3 = Listing(
+    title='Haunted House with a Cozy Atmosphere',
+    description='Enjoy your time here while the ghost is sleeping. He is harmless',
+    address='123 Casper St',
+    daily_price = 1,
     user_id=u1_id
 )
 
-db.session.add_all([l1, l2])
+db.session.add_all([l1, l2, l3])
 db.session.commit()
 
 l1_id = l1.id
 l2_id = l2.id
+l3_id = l3.id
 
 i1 = ImagePath(
-    path='xyz',
+    path='house1.jpg',
     listing_id=l1_id
 )
 
 i2 = ImagePath(
-    path='test.jpeg',
+    path='house2.jpg',
+    listing_id=l1_id
+)
+
+i3 = ImagePath(
+    path='apartment1.jpg',
     listing_id=l2_id
 )
 
+i4 = ImagePath(
+    path='apartment2.jpg',
+    listing_id=l2_id
+)
 
-db.session.add_all([i1, i2])
+i5 = ImagePath(
+    path='casper1.jpg',
+    listing_id=l3_id
+)
+
+i6 = ImagePath(
+    path='casper2.jpg',
+    listing_id=l3_id
+)
+
+
+db.session.add_all([i1, i2, i3, i4, i5, i6])
 db.session.commit()
 
 
@@ -80,11 +110,3 @@ r1 = Reservation(
 db.session.add_all([r1])
 db.session.commit()
 
-
-#######################################
-# cafe maps
-
-# c1.save_map()
-# c2.save_map()
-#
-# db.session.commit()

@@ -200,6 +200,10 @@ class Message(db.Model):
         nullable=False,
     )
 
+    is_read = db.Column(
+        db.Boolean,
+        default=False
+    )
     sender = db.relationship('User', foreign_keys=[
                              sender_id], backref='sent_messages')
     recipient = db.relationship(
@@ -207,7 +211,7 @@ class Message(db.Model):
 
     @classmethod
     def message(cls, sender_id, recipient_id, content):
-        """Creates a Reservation."""
+        """Creates a Message."""
 
         message = Message(
             sender_id=sender_id,
