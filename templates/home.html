@@ -8,27 +8,28 @@
 {% if g.user %}
 <div class="row">
 
-  <aside class="col-md-4 col-lg-3 col-sm-12" id="home-aside">
+  <aside class="col-md-12 col-lg-12 col-sm-12 text-center" id="home-aside">
     <div class="card user-card">
       <div>
-        <!-- <div class="image-wrapper">
-          <img src="{{ url }}{{g.user.image_path}}" alt="" class="card-hero">
-        </div> -->
-        <a href="/users/{{ g.user.id }}" class="card-link">
-          <img src="{{ url }}{{g.user.image_path}}" alt="Image for {{ g.user.username }}" class="card-image">
+        <!-- <div class=" image-wrapper">
+      <img src="{{ url }}{{g.user.image_path}}" alt="" class="card-hero">
+    </div> -->
+        <a href="/users/{{ g.user.id }}" class="card-link w-50">
+          <img src="{{ url }}{{g.user.image_path}}" alt="Image for {{ g.user.username }}"
+            class="card-image w-75 rounded-cirlce">
           <p>@{{ g.user.username }}</p>
         </a>
         <ul class="user-stats nav nav-pills">
-          <li class="stat">
+          <li class="stat p-4">
             <p class="small">Listings</p>
             <h4>
-              <a href="/users/{{ g.user.id }}">
+              <a href=" /users/{{ g.user.id }}">
                 {{ g.user.listings | length }}
               </a>
             </h4>
           </li>
 
-          <li class="stat">
+          <li class="stat p-4">
             <p class="small">Reservations</p>
             <h4>
               <a href="/users/{{ g.user.id }}">
@@ -74,6 +75,7 @@
   <h4>New to Share B and B?</h4>
   <p>Sign up now to get your own listings!</p>
   <a href="/signup" class="btn btn-primary">Sign up</a>
+  <a href="/login" class="btn btn-primary">Login</a>
 </div>
 {% endif %}
 {% endblock %}

@@ -2,17 +2,24 @@
 
 {% block content %}
 
-<div class="col-lg-4 col-md-6 col-12">
+<div class="col-12">
   <div class="card-contents">
-    <p>{{ listing.title }}</p>
-    <p>{{ listing.description }}</p>
-    <p>{{ listing.address }}</p>
+    <div class="listing-info m-2 text">
+      <h3>{{ listing.title }}</h3>
+      <div class="despription">
+        <h6>Description:</h6>
+        <p>{{ listing.description }}</p>
+      </div>
+      <h6>Address:</h6>
+      <p>{{ listing.address }}</p>
+    </div>
 
 
     {% for image in listing.images %}
     <img src="{{url}}{{image.path}}" alt="">
     {% endfor %}
     {% if g.user.id == listing.user.id %}
+
     <form action="/listings/{{listing.id}}/edit">
       <button type="submit">Edit</button>
     </form>
@@ -20,12 +27,17 @@
       <button type="submit">Delete</button>
     </form>
     {% else %}
-    <button><a href="/reservations/{{listing.id}}">
-        Book Now!
-      </a></button>
-    <button><a href="/users/{{listing.user.id}}">{{listing.user.username}}</a></button>
-    <button><a href="/users/{{listing.user.id}}/message">Message {{listing.user.username}} about listing.</a></button>
-    {% endif %}
+    <div class="listing-buttons d-block">
+      <button class="btn btn-primary"><a href="/reservations/{{listing.id}}" class="text-white text-decoration-none">
+          Book Now
+        </a></button>
+      <button class="btn btn-primary"><a href="/users/{{listing.user.id}}" class="text-white text-decoration-none">Owner
+          Profile</a></button>
+      <button class="btn btn-primary"><a href="/users/{{listing.user.id}}/message"
+          class="text-white text-decoration-none">Message owner about
+          listing.</a></button>
+      {% endif %}
+    </div>
   </div>
 </div>
 
