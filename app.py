@@ -300,6 +300,8 @@ def message_user(user_id):
     for message in messages:
         if g.user.id == message.recipient_id:
             message.is_read = True
+            db.session.commit()
+
 
     username = (User.query.get_or_404(user_id)).username
 

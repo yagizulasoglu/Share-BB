@@ -15,7 +15,7 @@
       </li>
       {% else %}
       {% if msg.is_read %}
-      <li>
+      <li style="color: black;">
         <p><a href="/users/{{msg.sender.id}}/message" style="text-decoration: none;">{{msg.sender.username}}:</a> {{msg.content}}</p>
       </li>
       {% else %}
